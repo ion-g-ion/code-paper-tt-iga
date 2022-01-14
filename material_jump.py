@@ -10,7 +10,7 @@ tn.set_default_dtype(tn.float64)
 
 #%% Create the bases for the space and parameters
 deg = 2
-Ns = np.array(3*[32])-deg+1
+Ns = np.array(3*[64])-deg+1
 baza1 = BSplineBasis(np.concatenate((np.linspace(0,0.5,Ns[0]//2),np.linspace(0.5,1,Ns[0]//2))),deg)
 baza2 = BSplineBasis(np.linspace(0,1,Ns[1]),deg)
 baza3 = BSplineBasis(np.concatenate((np.linspace(0,0.3,Ns[2]//3),np.linspace(0.3,0.7,Ns[2]//3),np.linspace(0.7,1,Ns[2]//3))),deg)
@@ -48,6 +48,8 @@ sigma_ref = lambda x:  0.0*x[:,2]+(5.0+x[:,3]*5.0)*tn.logical_and(x[:,0]>=0.0,x[
 #%% Instantiate the Geometry object and do some plots
 geom = Geometry(Basis+Basis_param)
 geom.interpolate([xparam, yparam, zparam])
+
+# plots
 
 # fig = geom.plot_domain([tn.tensor([0.05]),tn.tensor([-0.05]),tn.tensor([0.05]),tn.tensor([0.05])],[(0,1),(0,1),(0.0,1)],surface_color='blue', wireframe = False,alpha=0.1)
 # geom.plot_domain([tn.tensor([0.05]),tn.tensor([-0.05]),tn.tensor([0.05]),tn.tensor([0.05])],[(0.0,0.5),(0.0,1),(0.3,0.7)],fig = fig,surface_color='green',wireframe = False)
@@ -103,7 +105,7 @@ eps_solver = 1e-6
 
 print('Solving in TT...')
 tme_amen = datetime.datetime.now() 
-dofs_tt = tntt.solvers.amen_solve(M_tt, rhs_tt, x0 = tntt.ones(rhs_tt.N), eps = eps_solver, nswp=40, kickrank=4)
+dofs_tt = tntt.solvers.amen_solve(M_tt.cuda(), rhs_tt.cuda(), x0 = tntt.ones(rhs_tt.N).cuda(), eps = eps_solver, nswp=40, kickrank=4).cpu()
 tme_amen = (datetime.datetime.now() -tme_amen).total_seconds() 
 print('Time system solve in TT ',tme_amen)
 

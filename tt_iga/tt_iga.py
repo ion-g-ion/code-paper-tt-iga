@@ -1,5 +1,6 @@
 import torch as tn
 import torchtt as tntt
+import numpy as np
 from .aux import *
 import matplotlib.pyplot as plt
 import datetime
@@ -11,7 +12,7 @@ class Function():
         self.N = [b.N for b in basis]
         self.basis = basis
         
-    def interpolate(self, fun, geometry = None, eps = 1e-12):
+    def interpolate(self, function, geometry = None, eps = 1e-12):
         
         Xg = [tn.tensor(b.interpolating_points()[0], dtype = tn.float64) for b in self.basis]
         Mg = [tn.tensor(b.interpolating_points()[1], dtype = tn.float64) for b in self.basis]
@@ -21,11 +22,19 @@ class Function():
         
         if geometry == None:
             X = tntt.TT(Xg[0])**tntt.ones(self.N[1:])   
-            Y = tntt.ones(self.N[:1]) ** tntt.tensor(Xg[1]) ** tntt.ones(self.N[2:]) 
-            Z = tntt.ones(self.N[:2]) ** tntt.tensor(Xg[2]) ** tntt.ones(self.N[3:])  
+            Y = tntt.ones(self.N[:1]) ** tntt.TT(Xg[1]) ** tntt.ones(self.N[2:]) 
+            Z = tntt.ones(self.N[:2]) ** tntt.TT(Xg[2]) ** tntt.ones(self.N[3:])  
         else:
-            X,Y,Z = geometry(Xg,eps=eps)
-        evals = tntt.interpolate.function_interpolate(fun, [X,Y,Z], eps)
+            X,Y,Z = geometry(Xg)
+
+        if len(self.basis)==3:
+            evals = tntt.interpolate.function_interpolate(function, [X, Y, Z], eps)
+        else:
+            Np = len(self.basis[3:])
+            meshgrid = tntt.meshgrid([x for x in Xg[3:]])
+            meshgrid = [X,Y,Z] + [tntt.ones([n for n in self.N[:3]])**m for m in meshgrid]
+            evals = tntt.interpolate.function_interpolate(function, meshgrid, eps, verbose = False)
+            
 
         dofs = tntt.solvers.amen_solve(Gm,evals,x0 = evals,eps = eps,verbose = False)
         self.dofs = dofs
@@ -44,6 +53,47 @@ class Function():
         
         return val 
     
+    def L2error(self, function, geometry_map = None, level = 32):
+
+        pts, ws = np.polynomial.legendre.leggauss(level)
+        pts = (pts+1)*0.5
+        ws = ws/2
+        
+        Xg = [tn.tensor(b.interpolating_points()[0], dtype = tn.float64) for b in self.basis]
+         
+        if geometry_map != None:
+            X,Y,Z = geometry_map([tn.tensor(pts)]*len(self.N))
+            Og_tt = geometry_map.eval_omega([tn.tensor(pts)]*3, interp=True)
+        else:
+            X,Y,Z = geometry_map(Xg)
+        
+        B_tt = tntt.TT(self.basis[0](pts),shape = [(self.basis[0].N,pts.size)]) ** tntt.TT(self.basis[1](pts),shape = [(self.basis[1].N,pts.size)]) ** tntt.TT(self.basis[2](pts),shape = [(self.basis[2].N,pts.size)]) 
+        B_tt = B_tt.t()
+        C_tt = tntt.eye(B_tt.M)
+        
+        for i in range(3,len(self.basis)):
+            B_tt = B_tt ** tntt.TT(self.basis[i](pts).transpose(), shape = [(pts.size, self.basis[i].N)])
+            C_tt = C_tt ** tntt.TT(self.basis[i](pts).transpose(), shape = [(pts.size, self.basis[i].N)])
+        # X = C_tt @ X
+        # Y = C_tt @ Y
+        # Z = C_tt @ Z
+        Og_tt = C_tt @ Og_tt
+        d_eval = B_tt @ self.dofs
+        
+        if len(self.basis)==3:
+            f_eval = tntt.interpolate.function_interpolate(function, [X, Y, Z], 1e-13)
+        else:
+            Np = len(self.N[3:])
+            meshgrid = tntt.meshgrid([tn.tensor(pts)]*Np)
+            meshgrid = [X,Y,Z] + [tntt.ones([pts.size]*3)**m for m in meshgrid]
+            f_eval = tntt.interpolate.function_interpolate(function, meshgrid, 1e-13)
+        
+        diff = f_eval-d_eval
+        Ws = tntt.rank1TT(len(self.basis)*[tn.tensor(ws)])
+        
+        integral = np.abs(tntt.dot(Ws*diff,diff*Og_tt).numpy())
+        # print(integral)
+        return np.sqrt(integral)
     
 class Geometry():
     
@@ -200,13 +250,15 @@ class Geometry():
             No =list(Og_tt.N)
             Og_tt = tntt.reshape(Og_tt,Nqtt)     
 
-        tme = datetime.datetime.now()
-        # Ogi_tt = 1/Og_tt
-        Ogi_tt = tntt.elementwise_divide(tntt.ones(Og_tt.N, dtype = tn.float64, device = device), Og_tt, eps = eps, starting_tensor = None, nswp = 50, kick = 8)
-        tme = datetime.datetime.now() -tme
-        if verb: print('time omega inv' , tme,' rank ',Ogi_tt.R,flush=True)
-        #if verb: print('invert error ',(Ogi_tt*Og_tt-tt.ones(Og_tt.n)).norm()/tt.ones(Og_tt.n).norm())
-        Ogi_tt = Ogi_tt.round(eps)
+
+        if not qtt:
+            tme = datetime.datetime.now()
+            # Ogi_tt = 1/Og_tt
+            Ogi_tt = tntt.elementwise_divide(tntt.ones(Og_tt.N, dtype = tn.float64, device = device), Og_tt, eps = eps, starting_tensor = None, nswp = 50, kick = 8)
+            tme = datetime.datetime.now() -tme
+            if verb: print('time omega inv' , tme,' rank ',Ogi_tt.R,flush=True)
+            #if verb: print('invert error ',(Ogi_tt*Og_tt-tt.ones(Og_tt.n)).norm()/tt.ones(Og_tt.n).norm())
+            Ogi_tt = Ogi_tt.round(eps)
 
         
 
@@ -224,8 +276,9 @@ class Geometry():
             F_tt = tntt.ones(Ogi_tt.N)
 
         if qtt:
-            F_tt = tntt.reshape(F_tt,Nqtt)  
-        Ogi_tt = (Ogi_tt * F_tt).round(eps)
+            F_tt = tntt.reshape(F_tt,Nqtt) 
+        else: 
+            Ogi_tt = (Ogi_tt * F_tt).round(eps)
         
         tme = datetime.datetime.now()
         g11, g21, g31 = GTT(ps, self.basis, self.Xs, (True,False,False))
@@ -288,7 +341,7 @@ class Geometry():
                 if not qtt:
                     tmp = tmp*Ogi_tt
                 else:
-                    tmp = tntt.elementwise_divide(tmp,Og_tt,eps=eps,kick=8) 
+                    tmp = tntt.elementwise_divide(tmp,Og_tt,eps=eps,kick=8)*F_tt 
 
             #  print('Rank of product',tmp.r)
                 tmp = tmp.round(eps,rankinv)
