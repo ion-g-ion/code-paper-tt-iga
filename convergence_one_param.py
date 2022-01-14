@@ -40,7 +40,7 @@ def solve(Ns,deg,nl,alpha=1/4,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = 
     
     
     tme = datetime.datetime.now() 
-    Stiff_tt = geom.stiffness_interp( eps = eps_construction, qtt = False, verb=True)
+    Stiff_tt = geom.stiffness_interp( eps = eps_construction, qtt = False, verb=False)
     tme = datetime.datetime.now() -tme
     print('Time stiffness matrix ',tme.total_seconds())
     tme_stiff = tme.total_seconds()
@@ -64,7 +64,7 @@ def solve(Ns,deg,nl,alpha=1/4,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = 
     uref_fun.interpolate(uref, geometry = geom, eps = 1e-14)
     
     f_fun = Function(Basis+Basis_param)
-    f_fun.interpolate(ffun, geometry = geom , eps = 1e-14)
+    f_fun.dofs = tntt.zeros(uref_fun.dofs.N)
     
 
     Pin_tt, Pbd_tt = get_projectors(N,[[0,0],[0,0],[0,0]]) 
@@ -87,19 +87,19 @@ def solve(Ns,deg,nl,alpha=1/4,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = 
     
     tme = datetime.datetime.now() 
     print('eps solver ',eps_solver,flush=True)
-    dofs_tt = tntt.solvers.amen_solve(M_tt, rhs_tt, x0 = tntt.ones(rhs_tt.N), eps = eps_solver, nswp = 50, kickrank = 4, preconditioner = 'c')
+    dofs_tt = tntt.solvers.amen_solve(M_tt.cuda(), rhs_tt.cuda(), x0 = tntt.ones(rhs_tt.N).cuda(), eps = eps_solver, nswp = 50, kickrank = 4, preconditioner = 'c', verbose = False).cpu()
     tme = datetime.datetime.now() -tme
     print('Time system solve ',tme,flush=True)
     tme_solve = tme.total_seconds()
    
     if qtt:
-        M_qtt = M_tt.to_qtt()
-        rhs_qtt = rhs_tt.to_qtt()
+        M_qtt = M_tt.to_qtt().round(eps_construction)
+        rhs_qtt = rhs_tt.to_qtt().round(eps_construction)
         print('Rank Mqtt ',M_qtt.R)
         print('Rank rhsqtt ',rhs_qtt.R)
     
     tme_solve_qtt = datetime.datetime.now()
-    if qtt: dofs_qtt = tntt.solvers.amen_solve(M_qtt, rhs_qtt, x0 = rhs_qtt.round(1e-10,1), eps = eps_solver, nswp = 80, kickrank = 6, preconditioner='c')
+    if qtt: dofs_qtt = tntt.solvers.amen_solve(M_qtt.cuda(), rhs_qtt.cuda(), x0 = rhs_qtt.round(1e-10,1).cuda(), eps = eps_solver, nswp = 80, kickrank = 6, preconditioner='c').cpu()
     tme_solve_qtt = datetime.datetime.now() - tme_solve_qtt
     print('Time in QTT ',tme_solve_qtt,flush=True)
     tme_solve_qtt = tme_solve_qtt.total_seconds()
@@ -192,7 +192,7 @@ for d in degs:
         print()
         print('N ',n,' , deg ',d)
         Ns = np.array([n,n,n])
-        dct = solve(Ns,d,8,conventional=0, eps_solver=1e-9 if (d==3 and n>100) else 1e-8,qtt = 1  )
+        dct = solve(Ns,d,8,conventional=0, eps_solver=1e-9 if (d==3 and n>100) else 1e-8,qtt = True  )
         tmp2.append(dct['err_L2'])
         tmp.append(dct['err_inf'])
         tmp3.append(dct['time_stiff'])

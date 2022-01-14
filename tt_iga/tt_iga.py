@@ -103,7 +103,7 @@ class Geometry():
         self.basis = basis
         self.Xs = Xs
         
-    def interpolate(self, geometry_map, eps = 1e-12):
+    def interpolate(self, geometry_map, eps = 1e-13):
         
         Xg = [tn.tensor(b.interpolating_points()[0], dtype = tn.float64) for b in self.basis]
         Mg = [tn.tensor(b.interpolating_points()[1], dtype = tn.float64) for b in self.basis]
