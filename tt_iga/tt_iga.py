@@ -259,7 +259,9 @@ class Geometry():
             if verb: print('time omega inv' , tme,' rank ',Ogi_tt.R,flush=True)
             #if verb: print('invert error ',(Ogi_tt*Og_tt-tt.ones(Og_tt.n)).norm()/tt.ones(Og_tt.n).norm())
             Ogi_tt = Ogi_tt.round(eps)
-
+        else:
+            pass
+            # Ogi_tt = tntt.elementwise_divide(tntt.ones(Og_tt.N, dtype = tn.float64, device = device), Og_tt, eps = eps, starting_tensor = None, nswp = 50, kick = 8)
         
 
         if func != None or func_reference != None:
@@ -273,7 +275,7 @@ class Geometry():
                 F_tt = tntt.interpolate.function_interpolate(func_reference,tntt.meshgrid(ps+params),eps = eps,verbose = False).round(eps)
                 if verb: print('rank of Ftt is ',F_tt.R)
         else:
-            F_tt = tntt.ones(Ogi_tt.N)
+            F_tt = tntt.ones(Og_tt.N)
 
         if qtt:
             F_tt = tntt.reshape(F_tt,Nqtt) 
@@ -341,7 +343,7 @@ class Geometry():
                 if not qtt:
                     tmp = tmp*Ogi_tt
                 else:
-                    tmp = tntt.elementwise_divide(tmp,Og_tt,eps=eps,kick=8)*F_tt 
+                    tmp = tntt.elementwise_divide(tmp,Og_tt, starting_tensor = tmp, eps=eps,kick=8, nswp = 50)*F_tt 
 
             #  print('Rank of product',tmp.r)
                 tmp = tmp.round(eps,rankinv)
