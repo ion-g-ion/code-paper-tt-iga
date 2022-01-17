@@ -11,7 +11,8 @@ tn.set_default_dtype(tn.float64)
 
 
 def solve(Np, Ns = [40,20,80], deg = 2 ,nl = 8):
-
+    print()
+    print('number of parameters ',Np)
     # used to return the results
     dct = {}
 
@@ -82,10 +83,13 @@ def solve(Np, Ns = [40,20,80], deg = 2 ,nl = 8):
     # solve the system
     eps_solver = 1e-7
     tme_amen = datetime.datetime.now() 
-    dofs_tt = tntt.solvers.amen_solve(M_tt.cuda(), rhs_tt.cuda(), x0 = tntt.ones(rhs_tt.N).cuda(), eps = eps_solver, nswp = 40, preconditioner = 'c').cpu()
+    # dofs_tt = tntt.solvers.amen_solve(M_tt.cuda(), rhs_tt.cuda(), x0 = tntt.ones(rhs_tt.N).cuda(), eps = eps_solver, nswp = 40, preconditioner = 'c', verbose = False).cpu()
+    dofs_tt = tntt.solvers.amen_solve(M_tt, rhs_tt, x0 = tntt.ones(rhs_tt.N), eps = eps_solver, nswp = 40, preconditioner = 'c',  verbose = False)
     tme_amen = (datetime.datetime.now() -tme_amen).total_seconds() 
     dct['time solver'] = tme_amen
 
+    print('Time solver', tme_amen)
+    
     # save stats in the dictionary
     dct['rank matrix'] = np.mean(M_tt.R)
     dct['rank rhs'] = np.mean(rhs_tt.R)
@@ -112,13 +116,13 @@ def solve(Np, Ns = [40,20,80], deg = 2 ,nl = 8):
     err = tn.max(tn.abs(u_val-u_ref))
 
     dct['max_err'] = err
-    print('\n\nMax err %e\n\n'%(err))
+    print('\nMax err %e\n\n'%(err))
     return dct
 
 
 if __name__ == '__main__':
 
-    Nps = [2,3,4,5,6,7,8,9,10]
+    Nps = [2,3,4,5,6,7,8,9,10,11,12]
 
     dct_results = dict()
 

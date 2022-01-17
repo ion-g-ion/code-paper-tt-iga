@@ -560,8 +560,8 @@ def construct_sparse_from_tt(basis,Stt,additional_indices):
     vals = np.zeros((np.prod(N)*(2*basis[0].deg+1)*(2*basis[1].deg+1)*(2*basis[2].deg+1)))
     idx = 0
     
-    cores = Stt.to_list(Stt)
-    cores = [tn.tensor(c) for c in cores]
+   
+    cores = [c.numpy() for c in Stt.cores]
     for i in range(2+len(additional_indices),2,-1):
         cores[i-1] = oe.contract('ijkl,lo->ijko',cores[i-1],cores[i][:,additional_indices[i-3],additional_indices[i-3],:])
 
@@ -580,7 +580,7 @@ def construct_sparse_from_tt(basis,Stt,additional_indices):
                 # cols_tmp = [[i,j,k] for k in range(k1,k2) for j in range(j1,j2) for i in range(i1,i2)]
                 rows[idx:idx+toadd] = np.array(rows_tmp)
                 cols[idx:idx+toadd] = np.array(cols_tmp)
-                vals[idx:idx+toadd] = oe.contract('jk,klm,mn->jln',cores[0][0,m,i1:i2,:],cores[1][:,n,j1:j2,:],cores[2][:,o,k1:k2,0]).numpy().flatten()            
+                vals[idx:idx+toadd] = oe.contract('jk,klm,mn->jln',cores[0][0,m,i1:i2,:],cores[1][:,n,j1:j2,:],cores[2][:,o,k1:k2,0]).flatten()            
                 idx += toadd
 
     normal_ordering = True 

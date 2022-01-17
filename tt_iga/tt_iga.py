@@ -342,11 +342,13 @@ class Geometry():
                 tme = datetime.datetime.now()
                 if not qtt:
                     tmp = tmp*Ogi_tt
+                    tmp = tmp.round(eps,rankinv)
                 else:
                     tmp = tntt.elementwise_divide(tmp,Og_tt, starting_tensor = tmp, eps=eps,kick=8, nswp = 50)*F_tt 
+                    # tmp = tmp*Ogi_tt*F_tt
 
             #  print('Rank of product',tmp.r)
-                tmp = tmp.round(eps,rankinv)
+                
                 tme = datetime.datetime.now() -tme
                 if verb: print('\ttime 2 ' , tme,' rank ',tmp.R)
                 
