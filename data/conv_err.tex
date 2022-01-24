@@ -1,0 +1,79 @@
+% This file was created with tikzplotlib v0.9.17.
+\begin{tikzpicture}
+
+\begin{axis}[
+legend cell align={left},
+legend style={fill opacity=0.8, draw opacity=1, text opacity=1, draw=white!80!black},
+log basis x={10},
+log basis y={10},
+tick align=outside,
+tick pos=left,
+x grid style={white!69.0196078431373!black},
+xlabel={\(\displaystyle N\)},
+xmajorgrids,
+xmin=6.96440450636899, xmax=147.03338943962,
+xminorgrids,
+xmode=log,
+xtick style={color=black},
+y grid style={white!69.0196078431373!black},
+ylabel={relative errors},
+ymajorgrids,
+ymin=1.12878556166372e-07, ymax=1.54863264775962,
+yminorgrids,
+ymode=log,
+ytick style={color=black}
+]
+\addplot [semithick, red]
+table {%
+8 0.733709264938332
+16 0.163468386044911
+32 0.0365903130645534
+64 0.00868005779756038
+128 0.00237944824804574
+};
+\addlegendentry{deg 1}
+\addplot [semithick, green!50!black]
+table {%
+8 0.189093133114844
+16 0.0131953411622425
+32 0.00124257575970795
+64 0.000149449971474473
+128 1.5696871475765e-05
+};
+\addlegendentry{deg 2}
+\addplot [semithick, blue]
+table {%
+8 0.0780313217651071
+16 0.00174558676747788
+32 8.02852286343318e-05
+64 4.30447964288025e-06
+128 2.38251614998898e-07
+};
+\addlegendentry{deg 3}
+\addplot [semithick, black, dotted, forget plot]
+table {%
+8 0.555523699043864
+16 0.138880924760966
+32 0.0347202311902415
+64 0.00868005779756038
+128 0.0021700144493901
+};
+\addplot [semithick, black, dotted, forget plot]
+table {%
+8 0.0765183853949302
+16 0.00956479817436627
+32 0.00119559977179578
+64 0.000149449971474473
+128 1.86812464343091e-05
+};
+\addplot [semithick, black, dotted, forget plot]
+table {%
+8 0.0176311486172375
+16 0.00110194678857734
+32 6.8871674286084e-05
+64 4.30447964288025e-06
+128 2.69029977680015e-07
+};
+\end{axis}
+
+\end{tikzpicture}

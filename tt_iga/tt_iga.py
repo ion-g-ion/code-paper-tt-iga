@@ -1,19 +1,35 @@
 import torch as tn
 import torchtt as tntt
 import numpy as np
-from .aux import *
+from .aux_functions import *
 import matplotlib.pyplot as plt
 import datetime
 
 
 class Function():
-    
+      
     def __init__(self, basis):
+        """
+        
+
+        Args:
+            basis ([type]): [description]
+        """
         self.N = [b.N for b in basis]
         self.basis = basis
         
     def interpolate(self, function, geometry = None, eps = 1e-12):
+        """
         
+
+        Args:
+            function ([type]): [description]
+            geometry ([type], optional): [description]. Defaults to None.
+            eps ([type], optional): [description]. Defaults to 1e-12.
+
+        Returns:
+            [type]: [description]
+        """
         Xg = [tn.tensor(b.interpolating_points()[0], dtype = tn.float64) for b in self.basis]
         Mg = [tn.tensor(b.interpolating_points()[1], dtype = tn.float64) for b in self.basis]
         
@@ -98,13 +114,25 @@ class Function():
 class Geometry():
     
     def __init__(self, basis, Xs = None):
-                
+        """
+        
+
+        Args:
+            basis ([type]): [description]
+            Xs ([type], optional): [description]. Defaults to None.
+        """
         self.N = [b.N for b in basis]
         self.basis = basis
         self.Xs = Xs
         
     def interpolate(self, geometry_map, eps = 1e-13):
-        
+        """
+        Interpolates the given geometry map.
+
+        Args:
+            geometry_map (list[function]): [description]
+            eps ([type], optional): [description]. Defaults to 1e-13.
+        """
         Xg = [tn.tensor(b.interpolating_points()[0], dtype = tn.float64) for b in self.basis]
         Mg = [tn.tensor(b.interpolating_points()[1], dtype = tn.float64) for b in self.basis]
         
@@ -205,7 +233,15 @@ class Geometry():
         return res 
 
     def mass_interp(self, eps = 1e-12):
+        """
         
+
+        Args:
+            eps ([type], optional): [description]. Defaults to 1e-12.
+
+        Returns:
+            [type]: [description]
+        """
         p1, w1 = points_basis(self.basis[0])
         p2, w2 = points_basis(self.basis[1])
         p3, w3 = points_basis(self.basis[2])
@@ -470,7 +506,7 @@ class Geometry():
             
             x,y,z = self([tn.linspace(bounds[0][1],bounds[0][1],1, dtype = tn.float64),tn.linspace(bounds[1][1],bounds[1][1],1, dtype = tn.float64),tn.linspace(bounds[2][0],bounds[2][1],n, dtype = tn.float64)]+([] if params ==None else params))
             ax.plot(x.full().numpy().flatten(), y.full().numpy().flatten(), z.full().numpy().flatten(), frame_color)
-        plt.show()
+        
         return fig
 
     

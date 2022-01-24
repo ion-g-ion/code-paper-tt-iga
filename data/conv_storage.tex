@@ -1,0 +1,53 @@
+% This file was created with tikzplotlib v0.9.17.
+\begin{tikzpicture}
+
+\begin{axis}[
+legend cell align={left},
+legend style={
+  fill opacity=0.8,
+  draw opacity=1,
+  text opacity=1,
+  at={(0.03,0.97)},
+  anchor=north west,
+  draw=white!80!black
+},
+log basis x={10},
+log basis y={10},
+tick align=outside,
+tick pos=left,
+x grid style={white!69.0196078431373!black},
+xlabel={\(\displaystyle N\)},
+xmajorgrids,
+xmin=6.96440450636899, xmax=147.03338943962,
+xminorgrids,
+xmode=log,
+xtick style={color=black},
+y grid style={white!69.0196078431373!black},
+ylabel={storage [MB]},
+ymajorgrids,
+ymin=0.0108542784152931, ymax=0.631252353942404,
+yminorgrids,
+ymode=log,
+ytick style={color=black}
+]
+\addplot [semithick, red]
+table {%
+8 0.013056
+16 0.06912
+32 0.159744
+64 0.303616
+128 0.5248
+};
+\addlegendentry{TT}
+\addplot [semithick, green!50!black]
+table {%
+8 0.02464
+16 0.147504
+32 0.288672
+64 0.362576
+128 0.430512
+};
+\addlegendentry{QTT}
+\end{axis}
+
+\end{tikzpicture}

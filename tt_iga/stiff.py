@@ -1,7 +1,7 @@
 import torchtt as tntt
 import torch as tn
 import numpy as np
-from aux import *
+from tt_iga.aux_functions import *
 import datetime
 
 

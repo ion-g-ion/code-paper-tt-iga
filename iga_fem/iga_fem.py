@@ -7,7 +7,7 @@ import numpy as np
 import scipy.sparse
 import datetime
 import torch as tn
-import numba
+# import numba
 import opt_einsum as oe
 
 class timer():
@@ -77,30 +77,30 @@ def get_inegration_points(nl,a,b):
       
     return pts, ws
 
-@numba.jit(nopython=True)
-def mass_aux(i1,i2,j1,j2,k1,k2,B1,B2,B3,Bm,Bn,Bo,omega_eval,ws1,ws2,ws3):
-    n = (i2-i1)*(j2-j1)*(k2-k1)
-    vals = np.zeros((n))
-    idxs = np.zeros((n,3))
-    idx = 0
-    for i in range(i1,i2):
-        for j in range(j1,j2):
-            for k in range(k1,k2):
-                Bi = B1[i,:]
-                Bj = B2[j,:]
-                Bk = B3[k,:]
-                            
-                integral = np.dot(omega_eval,Bo*Bk*ws3)
-                integral = np.dot(integral,Bn*Bj*ws2)
-                integral = np.dot(integral,Bm*Bi*ws1)
-                            
-                vals[idx] = integral
-                idxs[idx,0] = i
-                idxs[idx,1] = j
-                idxs[idx,2] = k
-                idx += 1
-    
-    return idxs, vals
+# @numba.jit(nopython=True)
+# def mass_aux(i1,i2,j1,j2,k1,k2,B1,B2,B3,Bm,Bn,Bo,omega_eval,ws1,ws2,ws3):
+#     n = (i2-i1)*(j2-j1)*(k2-k1)
+#     vals = np.zeros((n))
+#     idxs = np.zeros((n,3))
+#     idx = 0
+#     for i in range(i1,i2):
+#         for j in range(j1,j2):
+#             for k in range(k1,k2):
+#                 Bi = B1[i,:]
+#                 Bj = B2[j,:]
+#                 Bk = B3[k,:]
+#                             
+#                 integral = np.dot(omega_eval,Bo*Bk*ws3)
+#                 integral = np.dot(integral,Bn*Bj*ws2)
+#                 integral = np.dot(integral,Bm*Bi*ws1)
+#                             
+#                 vals[idx] = integral
+#                 idxs[idx,0] = i
+#                 idxs[idx,1] = j
+#                 idxs[idx,2] = k
+#                 idx += 1
+#     
+#     return idxs, vals
 
                            
 def construct_mass_sparse2(basis,Ps,normal_ordering=True, kappa = None):
@@ -402,8 +402,8 @@ def construct_stiff_sparse(basis,Ps,normal_ordering=True, kappa_ref = None):
         pts1 += list(pts)
         ws1 += list(ws)
         
-    pts1 = np.array(pts1)
-    ws1 = np.array(ws1)
+    pts1 = tn.tensor(pts1, dtype = tn.float64)
+    ws1 = tn.tensor(ws1, dtype = tn.float64)
     
     knots =  basis[1].knots[basis[1].deg:-basis[1].deg] #np.unique(basis[1].knots)
     pts2 = []
@@ -415,8 +415,8 @@ def construct_stiff_sparse(basis,Ps,normal_ordering=True, kappa_ref = None):
         
         pts2 += list(pts)
         ws2 += list(ws)
-    pts2 = np.array(pts2)
-    ws2 = np.array(ws2)
+    pts2 = tn.tensor(pts2, dtype = tn.float64)
+    ws2 = tn.tensor(ws2, dtype = tn.float64)
     
     knots = basis[2].knots[basis[2].deg:-basis[2].deg] # np.unique(basis[2].knots)
     pts3 = []
@@ -428,23 +428,23 @@ def construct_stiff_sparse(basis,Ps,normal_ordering=True, kappa_ref = None):
         
         pts3 += list(pts)
         ws3 += list(ws)
-    pts3 = np.array(pts3)
-    ws3 = np.array(ws3)
+    pts3 = tn.tensor(pts3, dtype = tn.float64)
+    ws3 =  tn.tensor(ws3, dtype = tn.float64)
        
 
-    B1 = basis[0](pts1)
-    B2 = basis[1](pts2)
-    B3 = basis[2](pts3)      
-    dB1 = basis[0](pts1,derivative=True)
-    dB2 = basis[1](pts2,derivative=True)
-    dB3 = basis[2](pts3,derivative=True)
+    B1 =  tn.tensor(basis[0](pts1))
+    B2 =  tn.tensor(basis[1](pts2))
+    B3 =  tn.tensor(basis[2](pts3))     
+    dB1 = tn.tensor(basis[0](pts1,derivative=True))
+    dB2 = tn.tensor(basis[1](pts2,derivative=True))
+    dB3 = tn.tensor(basis[2](pts3,derivative=True))
                 
     for m in range(N[0]):
         i1 = max([m-basis[0].deg,0])
         i2 = min([m+basis[0].deg+1,N[0]])
         p1 = pts1[i1*nw:i2*nw]
         w1 = ws1[i1*nw:i2*nw]
-        omega_inv_all = 1/eval_omega_3d(Ps, basis, [p1, pts2, pts3],to_tf=True)
+        omega_inv_all = tn.tensor(1/eval_omega_3d(Ps, basis, [p1, pts2, pts3],to_tf=True))
         if kappa_ref != None:
             P1 = oe.einsum('i,j,k->ijk',p1,pts2*0+1,pts3*0+1)
             P2 = oe.einsum('i,j,k->ijk',p1*0+1,pts2,pts3*0+1)
@@ -454,6 +454,8 @@ def construct_stiff_sparse(basis,Ps,normal_ordering=True, kappa_ref = None):
         G11,G21,G31 = eval_G([p1, pts2, pts3],basis,Ps,(True,False,False))
         G12,G22,G32 = eval_G([p1, pts2, pts3],basis,Ps,(False,True,False))
         G13,G23,G33 = eval_G([p1, pts2, pts3],basis,Ps,(False,False,True))
+
+
         for n in range(N[1]):
             for o in range(N[2]):
                 # print(m,n,o)
@@ -494,14 +496,15 @@ def construct_stiff_sparse(basis,Ps,normal_ordering=True, kappa_ref = None):
 
                 # timer.toc()
                 
-                # timer.tic()
+                timer.tic()
                 
                 toadd = (i2-i1)*(j2-j1)*(k2-k1)
                 rows_tmp = [[m,n,o]]*(i2-i1)*(j2-j1)*(k2-k1)
                 cols_tmp = [[i,j,k] for i in range(i1,i2) for j in range(j1,j2) for k in range(k1,k2)]
                 rows[idx:idx+toadd] = np.array(rows_tmp)
                 cols[idx:idx+toadd] = np.array(cols_tmp)
-                
+                print(omega_inv.shape,w1.shape,w2.shape,w3.shape,(i2-i1,i2*nw-i1*nw), (j2-j1,j2*nw-j1*nw), (k2-k1,k2*nw-k1*nw) )
+                expr = oe.contract_expression('ijk,i,j,k,ai,bj,ck->abc',omega_inv.shape,w1.shape,w2.shape,w3.shape,(i2-i1,i2*nw-i1*nw), (j2-j1,j2*nw-j1*nw), (k2-k1,k2*nw-k1*nw)) 
                 for alpha in range(3):
                     for beta in range(3):
                         tmp = H[alpha][0]*H[beta][0]+H[alpha][1]*H[beta][1]+H[alpha][2]*H[beta][2]
@@ -518,10 +521,10 @@ def construct_stiff_sparse(basis,Ps,normal_ordering=True, kappa_ref = None):
 
 
 
-                        ints = oe.contract('ijk,i,j,k,ai,bj,ck->abc',integrand,Bm*w1,Bn*w2,Bo*w3,Bi,Bj,Bk)
-                        
+                        # ints = oe.contract('ijk,i,j,k,ai,bj,ck->abc',integrand,Bm*w1,Bn*w2,Bo*w3,Bi,Bj,Bk)
+                        ints = expr(integrand,Bm*w1,Bn*w2,Bo*w3,Bi,Bj,Bk)
                         # print(m,n,o,idx,toadd,vals.shape)
-                        vals[idx:idx+toadd] += ints.numpy().flatten()            
+                        vals[idx:idx+toadd] += ints.flatten().numpy()           
                         # timer.toc()
                         
                         # timer.tic()
@@ -534,7 +537,7 @@ def construct_stiff_sparse(basis,Ps,normal_ordering=True, kappa_ref = None):
                             
 
                             
-                # timer.toc()
+                timer.toc()
     # rows = [r[2]*N[1]*N[0]+r[1]*N[0]+r[0] for r in rows] 
     # cols = [c[2]*N[1]*N[0]+c[1]*N[0]+c[0] for c in cols]  
     vals = vals[:idx]

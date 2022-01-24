@@ -1,0 +1,36 @@
+% This file was created with tikzplotlib v0.9.17.
+\begin{tikzpicture}
+
+\definecolor{color0}{rgb}{0.12156862745098,0.466666666666667,0.705882352941177}
+
+\begin{axis}[
+log basis y={10},
+tick align=outside,
+tick pos=left,
+x grid style={white!69.0196078431373!black},
+xlabel={\(\displaystyle \ell\)},
+xmajorgrids,
+xmin=2.7, xmax=9.3,
+xminorgrids,
+xtick style={color=black},
+y grid style={white!69.0196078431373!black},
+ylabel={relative error},
+ymajorgrids,
+ymin=1.61508369650931e-07, ymax=0.00850472074416307,
+yminorgrids,
+ymode=log,
+ytick style={color=black}
+]
+\addplot [semithick, color0]
+table {%
+3 0.00518857395583263
+4 0.000445497028643006
+5 2.75336387566925e-05
+6 2.11009153649176e-06
+7 4.50268983367881e-07
+8 2.6473238955805e-07
+9 2.95832007003093e-07
+};
+\end{axis}
+
+\end{tikzpicture}
