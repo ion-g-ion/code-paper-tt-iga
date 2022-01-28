@@ -1,7 +1,7 @@
 import torch as tn
 import torchtt as tntt
 import matplotlib.pyplot as plt
-from tt_iga import *
+import tt_iga
 import numpy as np
 import datetime
 import matplotlib.colors
@@ -12,15 +12,15 @@ tn.set_default_dtype(tn.float64)
 deg = 2
 Ns = np.array([60,60,120])-deg+1
 Ns = np.array([40,40,82])-deg+1
-baza1 = BSplineBasis(np.linspace(0,1,Ns[0]),deg)
-baza2 = BSplineBasis(np.linspace(0,1,Ns[1]),deg)
-baza3 = BSplineBasis(np.concatenate((np.linspace(0,0.25,Ns[2]//4),np.linspace(0.25,0.5,Ns[2]//4),np.linspace(0.5,0.75,Ns[2]//4),np.linspace(0.75,1,Ns[2]//4-1))),deg)
+baza1 = tt_iga.bspline.BSplineBasis(np.linspace(0,1,Ns[0]),deg)
+baza2 = tt_iga.bspline.BSplineBasis(np.linspace(0,1,Ns[1]),deg)
+baza3 = tt_iga.bspline.BSplineBasis(np.concatenate((np.linspace(0,0.25,Ns[2]//4),np.linspace(0.25,0.5,Ns[2]//4),np.linspace(0.5,0.75,Ns[2]//4),np.linspace(0.75,1,Ns[2]//4-1))),deg)
 
 Basis = [baza1,baza2,baza3]
 N = [baza1.N,baza2.N,baza3.N]
 
 nl = 8
-Basis_param = [LagrangeLeg(nl,[-0.2,0.2])]*2+[LagrangeLeg(nl,[-0.3,0.3])]
+Basis_param = [tt_iga.lagrange.LagrangeLeg(nl,[-0.2,0.2])]*2+[tt_iga.lagrange.LagrangeLeg(nl,[-0.3,0.3])]
 
 
 xc = lambda u,v: u*tn.sqrt(1-v**2/2)
@@ -70,7 +70,7 @@ yparam = lambda t : plane_spanner(curve1(t[:,2],scale_mult*t[:,3],scale_mult*t[:
 zparam = lambda t : plane_spanner(curve1(t[:,2],scale_mult*t[:,3],scale_mult*t[:,4],scale_mult*t[:,5],0),curve2(t[:,2],scale_mult*t[:,3],scale_mult*t[:,4],scale_mult*t[:,5],0),curve3(t[:,2],scale_mult*t[:,3],scale_mult*t[:,4],scale_mult*t[:,5],0),t[:,0],t[:,1])[2]
 
 # interpolate the geometry parametrization
-geom = Geometry(Basis+Basis_param)
+geom = tt_iga.Geometry(Basis+Basis_param)
 geom.interpolate([xparam, yparam, zparam])
 
 # plot
@@ -112,17 +112,16 @@ tme = datetime.datetime.now() -tme
 print('Time stiffness matrix ',tme.total_seconds())
 
 
-
-Pin_tt,Pbd_tt = get_projectors(N,[[0,0],[0,0],[0,0]])
+Pin_tt,Pbd_tt = tt_iga.projectors.get_projectors(N,[[0,0],[0,0],[0,0]])
 # Pbd_tt = (1/N[0]) * Pbd_tt
-U0 = 10
 
 Pin_tt = Pin_tt ** tntt.eye([nl]*3)
 Pbd_tt = Pbd_tt ** tntt.eye([nl]*3)
 
+
 f_tt = tntt.zeros(Stt.N)
 
-excitation_dofs = Function(Basis).interpolate(lambda t: tn.sin(t[:,0]*np.pi)*tn.sin(t[:,1]*np.pi))
+excitation_dofs = tt_iga.Function(Basis).interpolate(lambda t: tn.sin(t[:,0]*np.pi)*tn.sin(t[:,1]*np.pi))
 tmp = tn.zeros(N)
 tmp[:,:,0] = excitation_dofs[:,:,0].full()
 g_tt = Pbd_tt@ (tntt.TT(tmp) ** tntt.ones([nl]*3))
@@ -141,7 +140,7 @@ M_tt = M_tt.round(1e-11)
 cuda = True
 print('Solving in TT...')
 tme_amen = datetime.datetime.now() 
-if cuda:
+if cuda and tn.cuda.is_available():
     dofs_tt = tntt.solvers.amen_solve(M_tt.cuda(), rhs_tt.cuda(), x0 = tntt.ones(rhs_tt.N).cuda(), eps = eps_solver, nswp=40, kickrank=2, verbose=True, preconditioner = 'c', local_iterations=24, resets=10).cpu()
 else:
     dofs_tt = tntt.solvers.amen_solve(M_tt, rhs_tt, x0 = tntt.ones(rhs_tt.N), eps = eps_solver, nswp=40, kickrank=2, verbose=True, preconditioner = 'c', local_iterations=24, resets=10)
@@ -171,7 +170,7 @@ print('size rhstt ',tntt.numel(rhs_tt)*8/1e6,' MB')
 print('size solution ',tntt.numel(dofs_tt)*8/1e6,' MB, one full solution: ',np.prod(N)*8/1e6,' MB')
 
 
-fspace = Function(Basis+Basis_param)
+fspace = tt_iga.Function(Basis+Basis_param)
 fspace.dofs = dofs_tt
 
 fval = fspace([tn.linspace(0,1,128),tn.tensor([0.5]),tn.linspace(0,1,128),tn.tensor([-0.1]),tn.tensor([-0.1]),tn.tensor([-0.1]),tn.tensor([-0.1])])

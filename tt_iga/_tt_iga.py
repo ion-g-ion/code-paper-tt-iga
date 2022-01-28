@@ -1,7 +1,7 @@
 import torch as tn
 import torchtt as tntt
 import numpy as np
-from .aux_functions import *
+from ._aux_functions import *
 import matplotlib.pyplot as plt
 import datetime
 
@@ -58,7 +58,16 @@ class Function():
         return dofs
     
     def __call__(self, x, deriv = None):
+        """
         
+
+        Args:
+            x ([type]): [description]
+            deriv ([type], optional): [description]. Defaults to None.
+
+        Returns:
+            [type]: [description]
+        """
         if deriv == None:
             deriv = [False]*len(self.N)
         
@@ -70,7 +79,17 @@ class Function():
         return val 
     
     def L2error(self, function, geometry_map = None, level = 32):
+        """
+        
 
+        Args:
+            function ([type]): [description]
+            geometry_map ([type], optional): [description]. Defaults to None.
+            level (int, optional): [description]. Defaults to 32.
+
+        Returns:
+            [type]: [description]
+        """
         pts, ws = np.polynomial.legendre.leggauss(level)
         pts = (pts+1)*0.5
         ws = ws/2
@@ -260,7 +279,21 @@ class Geometry():
         return tntt.TT(cores)
 
     def stiffness_interp(self, eps = 1e-10, func = None, func_reference = None, rankinv = 1024, device = None, verb = False, qtt = False):
+        """
         
+
+        Args:
+            eps ([type], optional): [description]. Defaults to 1e-10.
+            func ([type], optional): [description]. Defaults to None.
+            func_reference ([type], optional): [description]. Defaults to None.
+            rankinv (int, optional): [description]. Defaults to 1024.
+            device ([type], optional): [description]. Defaults to None.
+            verb (bool, optional): [description]. Defaults to False.
+            qtt (bool, optional): [description]. Defaults to False.
+
+        Returns:
+            [type]: [description]
+        """
         
         p1, w1 = points_basis(self.basis[0],mult=2)
         p2, w2 = points_basis(self.basis[1],mult=2)
@@ -435,7 +468,22 @@ class Geometry():
 
     
     def plot_domain(self, params = None, bounds = None, fig = None, wireframe = True, frame_color = 'r', n = 12, surface_color = 'blue',alpha = 0.4):
-        
+        """
+        Plot the domain for a given parameter (if any parameter dependence exists).
+
+        Args:
+            params ([type], optional): [description]. Defaults to None.
+            bounds ([type], optional): [description]. Defaults to None.
+            fig ([type], optional): [description]. Defaults to None.
+            wireframe (bool, optional): [description]. Defaults to True.
+            frame_color (str, optional): [description]. Defaults to 'r'.
+            n (int, optional): [description]. Defaults to 12.
+            surface_color (str, optional): [description]. Defaults to 'blue'.
+            alpha (float, optional): [description]. Defaults to 0.4.
+
+        Returns:
+            [type]: [description]
+        """
         if fig == None:
             fig = plt.figure()
             ax = plt.axes(projection='3d')

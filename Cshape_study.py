@@ -133,5 +133,6 @@ if __name__ == '__main__':
     # print header 
     df = pd.DataFrame([[el for el in v.values() ] for v in dct_results.values()], columns = [k for k in dct_results[2]])
     print(df)
-
+    df.to_pickle('./data/chshape.pickle')
+    
     eoc = lambda x,y: np.log(y[1:]/y[:-1])/np.log(x[1:]/x[:-1])

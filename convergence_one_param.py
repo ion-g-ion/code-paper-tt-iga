@@ -295,7 +295,7 @@ for eps in epss:
         print('eps ',eps, ' N ',n)
         dct = solve(np.array([n]*3),2,nl,eps_solver=eps,conventional = False,qtt=False)
         dct['n'] = n
-        dct['eps']
+        dct['eps'] = eps
 
 
 df3 = pd.DataFrame([[el for el in v.values() ] for v in results3], columns = [k for k in results3[0]])
