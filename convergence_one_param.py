@@ -90,8 +90,8 @@ def solve(Ns,deg,nl,alpha=1/3,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = 
     tme = datetime.datetime.now() 
     print('eps solver ',eps_solver,flush=True)
     # dofs_tt = tntt.solvers.amen_solve(M_tt.cuda(), rhs_tt.cuda(), x0 = tntt.ones(rhs_tt.N).cuda(), eps = eps_solver, nswp = 50, kickrank = 4, preconditioner = 'c', verbose = False).cpu()
-    dofs_tt = tntt.solvers.amen_solve(M_tt, rhs_tt, x0 = tntt.ones(rhs_tt.N), eps = eps_solver, nswp = 50, kickrank = 4, preconditioner = 'c', verbose = False).cpu()
-    tme = datetime.datetime.now() -tme
+    dofs_tt = tntt.solvers.amen_solve(M_tt, rhs_tt, x0 = tntt.ones(rhs_tt.N), eps = eps_solver, nswp = 60, kickrank = 4, preconditioner = 'c', verbose = False)
+    tme = datetime.datetime.now() - tme
     print('Time system solve ',tme,flush=True)
     tme_solve = tme.total_seconds()
    
@@ -103,7 +103,7 @@ def solve(Ns,deg,nl,alpha=1/3,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = 
     
     tme_solve_qtt = datetime.datetime.now()
     # if qtt: dofs_qtt = tntt.solvers.amen_solve(M_qtt.cuda(), rhs_qtt.cuda(), x0 = rhs_qtt.round(1e-10,1).cuda(), eps = eps_solver, nswp = 80, kickrank = 6, preconditioner='c').cpu()
-    if qtt: dofs_qtt = tntt.solvers.amen_solve(M_qtt, rhs_qtt, x0 = rhs_qtt.round(1e-10,1), eps = eps_solver, nswp = 80, kickrank = 7, preconditioner='c').cpu()
+    if qtt: dofs_qtt = tntt.solvers.amen_solve(M_qtt, rhs_qtt, x0 = rhs_qtt.round(1e-10,1), eps = eps_solver, nswp = 80, kickrank = 7, preconditioner='c')
     tme_solve_qtt = datetime.datetime.now() - tme_solve_qtt
     print('Time in QTT ',tme_solve_qtt,flush=True)
     tme_solve_qtt = tme_solve_qtt.total_seconds()
@@ -262,7 +262,7 @@ tikzplotlib.save('data/conv_N_ell.tex')
 
 plt.figure()
 plt.semilogy(np.array(nls),df2[df2['n']==ns[-1]]['err_L2'].to_numpy())
-plt.gca().set_xlabel(r'$#collocation points \ell$')
+plt.gca().set_xlabel(r'\#collocation points $\ell$')
 plt.gca().set_ylabel(r'relative error')
 plt.grid(True, which="both", ls="-")
 tikzplotlib.save('data/conv_ell.tex')
@@ -302,7 +302,7 @@ for eps in epss:
 df3 = pd.DataFrame([[el for el in v.values() ] for v in results3], columns = [k for k in results3[0]])
 
 plt.figure()
-for eps in epss: plt.loglog(np.array(ns),df2[df2['eps']==eps]['err_L2'].to_numpy())
+for eps in epss: plt.loglog(np.array(ns),df3[df3['eps']==eps]['err_L2'].to_numpy())
 plt.gca().set_xlabel(r'$n$')
 plt.gca().set_ylabel(r'relative error')
 plt.legend([r'$\epsilon=10^{'+str(int(np.log10(tmp)))+r'}$' for tmp in epss])

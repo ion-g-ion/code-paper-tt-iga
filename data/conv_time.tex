@@ -26,35 +26,35 @@ xtick style={color=black},
 y grid style={white!69.0196078431373!black},
 ylabel={time [s]},
 ymajorgrids,
-ymin=0.00240046532977587, ymax=134.664023675019,
+ymin=0.00124216207423343, ymax=138.95565126356,
 yminorgrids,
 ymode=log,
 ytick style={color=black}
 ]
 \addplot [semithick, red]
 table {%
-8 0.231287
-16 0.643196
-32 1.251063
-64 3.605927
-128 14.787332
+8 0.224968
+16 0.649198
+32 1.372646
+64 2.791932
+128 15.105723
 };
 \addlegendentry{TT (entire parameter grid)}
 \addplot [semithick, green!50!black]
 table {%
-8 0.711124
-16 2.228539
-32 5.413677
-64 12.761806
-128 34.781322
+8 0.709622
+16 2.205127
+32 5.131482
+64 12.417141
+128 35.166497
 };
 \addlegendentry{QTT (entire parameter grid)}
 \addplot [semithick, blue]
 table {%
-8 0.003946
-16 0.022538
-32 0.551636
-64 21.687256
+8 0.002107
+16 0.022524
+32 0.561367
+64 19.150183
 128 nan
 };
 \addlegendentry{GMRES (single geometry)}
