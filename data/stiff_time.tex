@@ -1,4 +1,4 @@
-% This file was created with tikzplotlib v0.9.17.
+% This file was created with tikzplotlib v0.9.12.
 \begin{tikzpicture}
 
 \begin{axis}[
@@ -17,7 +17,7 @@ tick align=outside,
 tick pos=left,
 unbounded coords=jump,
 x grid style={white!69.0196078431373!black},
-xlabel={\(\displaystyle N\)},
+xlabel={B-spline basis size \(\displaystyle n\)},
 xmajorgrids,
 xmin=6.96440450636899, xmax=147.03338943962,
 xminorgrids,
@@ -26,29 +26,29 @@ xtick style={color=black},
 y grid style={white!69.0196078431373!black},
 ylabel={time [s]},
 ymajorgrids,
-ymin=0.239784370012095, ymax=256.454154407996,
+ymin=0.255556560068189, ymax=370.481025715705,
 yminorgrids,
 ymode=log,
 ytick style={color=black}
 ]
 \addplot [semithick, red]
 table {%
-8 0.329239
-16 0.66239
-32 1.148484
-64 1.942605
-128 7.47485
+8 0.35578
+16 0.740025
+32 1.260458
+64 2.107634
+128 6.639987
 };
-\addlegendentry{TT}
+\addlegendentry{TT (entire parameter grid)}
 \addplot [semithick, green!50!black]
 table {%
-8 0.331903
-16 2.785099
-32 22.838437
-64 186.775254
+8 0.526179
+16 4.046317
+32 33.068201
+64 266.116298
 128 nan
 };
-\addlegendentry{conventional}
+\addlegendentry{conventional (single geometry)}
 \end{axis}
 
 \end{tikzpicture}

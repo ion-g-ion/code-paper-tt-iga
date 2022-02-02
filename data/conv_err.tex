@@ -1,15 +1,22 @@
-% This file was created with tikzplotlib v0.9.17.
+% This file was created with tikzplotlib v0.9.12.
 \begin{tikzpicture}
 
 \begin{axis}[
 legend cell align={left},
-legend style={fill opacity=0.8, draw opacity=1, text opacity=1, draw=white!80!black},
+legend style={
+  fill opacity=0.8,
+  draw opacity=1,
+  text opacity=1,
+  at={(0.03,0.03)},
+  anchor=south west,
+  draw=white!80!black
+},
 log basis x={10},
 log basis y={10},
 tick align=outside,
 tick pos=left,
 x grid style={white!69.0196078431373!black},
-xlabel={\(\displaystyle N\)},
+xlabel={B-spline basis size \(\displaystyle n\)},
 xmajorgrids,
 xmin=6.96440450636899, xmax=147.03338943962,
 xminorgrids,
@@ -18,62 +25,65 @@ xtick style={color=black},
 y grid style={white!69.0196078431373!black},
 ylabel={relative errors},
 ymajorgrids,
-ymin=1.12878556166372e-07, ymax=1.54863264775962,
+ymin=1.53696245574747e-07, ymax=1.64223736846836,
 yminorgrids,
 ymode=log,
 ytick style={color=black}
 ]
 \addplot [semithick, red]
 table {%
-8 0.733709264938332
-16 0.163468386044911
-32 0.0365903130645534
-64 0.00868005779756038
-128 0.00237944824804574
+8 0.78694841180587
+16 0.175100157619252
+32 0.0395520322413245
+64 0.00939831253914991
+128 0.00256069409269812
 };
-\addlegendentry{deg 1}
+\addlegendentry{linear}
 \addplot [semithick, green!50!black]
 table {%
-8 0.189093133114844
-16 0.0131953411622425
-32 0.00124257575970795
-64 0.000149449971474473
-128 1.5696871475765e-05
+8 0.218170963194862
+16 0.0144252443686202
+32 0.00134042686357555
+64 0.000159945899909763
+128 1.68288760372013e-05
 };
-\addlegendentry{deg 2}
+\addlegendentry{quadratic}
 \addplot [semithick, blue]
 table {%
-8 0.0780313217651071
-16 0.00174558676747788
-32 8.02852286343318e-05
-64 4.30447964288025e-06
-128 2.38251614998898e-07
+8 0.106368345094953
+16 0.00211506799884715
+32 9.56338546274787e-05
+64 5.13183764708387e-06
+128 5.49477958138966e-07
 };
-\addlegendentry{deg 3}
-\addplot [semithick, black, dotted, forget plot]
+\addlegendentry{cubic}
+\addplot [semithick, red, dotted]
 table {%
-8 0.555523699043864
-16 0.138880924760966
-32 0.0347202311902415
-64 0.00868005779756038
-128 0.0021700144493901
+8 0.601492002505594
+16 0.150373000626399
+32 0.0375932501565996
+64 0.00939831253914991
+128 0.00234957813478748
 };
-\addplot [semithick, black, dotted, forget plot]
+\addlegendentry{$\mathcal{O}(n^{-2})$ line}
+\addplot [semithick, green!50!black, dotted]
 table {%
-8 0.0765183853949302
-16 0.00956479817436627
-32 0.00119559977179578
-64 0.000149449971474473
-128 1.86812464343091e-05
+8 0.0818923007537989
+16 0.0102365375942249
+32 0.00127956719927811
+64 0.000159945899909763
+128 1.99932374887204e-05
 };
-\addplot [semithick, black, dotted, forget plot]
+\addlegendentry{$\mathcal{O}(n^{-3})$ line}
+\addplot [semithick, blue, dotted]
 table {%
-8 0.0176311486172375
-16 0.00110194678857734
-32 6.8871674286084e-05
-64 4.30447964288025e-06
-128 2.69029977680015e-07
+8 0.0210200070024555
+16 0.00131375043765347
+32 8.21094023533419e-05
+64 5.13183764708387e-06
+128 3.20739852942742e-07
 };
+\addlegendentry{$\mathcal{O}(n^{-4})$ line}
 \end{axis}
 
 \end{tikzpicture}

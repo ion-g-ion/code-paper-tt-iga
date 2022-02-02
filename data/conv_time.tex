@@ -1,4 +1,4 @@
-% This file was created with tikzplotlib v0.9.17.
+% This file was created with tikzplotlib v0.9.12.
 \begin{tikzpicture}
 
 \begin{axis}[
@@ -17,7 +17,7 @@ tick align=outside,
 tick pos=left,
 unbounded coords=jump,
 x grid style={white!69.0196078431373!black},
-xlabel={\(\displaystyle N\)},
+xlabel={B-spline basis size \(\displaystyle n\)},
 xmajorgrids,
 xmin=6.96440450636899, xmax=147.03338943962,
 xminorgrids,
@@ -26,38 +26,38 @@ xtick style={color=black},
 y grid style={white!69.0196078431373!black},
 ylabel={time [s]},
 ymajorgrids,
-ymin=0.00114207884945846, ymax=139.512609024808,
+ymin=0.00240046532977587, ymax=134.664023675019,
 yminorgrids,
 ymode=log,
 ytick style={color=black}
 ]
 \addplot [semithick, red]
 table {%
-8 0.200653
-16 0.514338
-32 1.061089
-64 2.55754
-128 13.126228
+8 0.231287
+16 0.643196
+32 1.251063
+64 3.605927
+128 14.787332
 };
-\addlegendentry{TT}
+\addlegendentry{TT (entire parameter grid)}
 \addplot [semithick, green!50!black]
 table {%
-8 0.673283
-16 1.769102
-32 3.920333
-64 9.815639
-128 21.257514
+8 0.711124
+16 2.228539
+32 5.413677
+64 12.761806
+128 34.781322
 };
-\addlegendentry{QTT}
+\addlegendentry{QTT (entire parameter grid)}
 \addplot [semithick, blue]
 table {%
-8 0.001945
-16 0.017183
-32 1.44627
-64 39.240734
+8 0.003946
+16 0.022538
+32 0.551636
+64 21.687256
 128 nan
 };
-\addlegendentry{GMRES}
+\addlegendentry{GMRES (single geometry)}
 \addplot [semithick, black, dotted]
 table {%
 8 0.32
@@ -66,7 +66,7 @@ table {%
 64 20.48
 128 81.92
 };
-\addlegendentry{$\mathcal{O}(N^{2})$ line}
+\addlegendentry{$\mathcal{O}(n^{2})$ line}
 \end{axis}
 
 \end{tikzpicture}

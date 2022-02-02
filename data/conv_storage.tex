@@ -1,4 +1,4 @@
-% This file was created with tikzplotlib v0.9.17.
+% This file was created with tikzplotlib v0.9.12.
 \begin{tikzpicture}
 
 \begin{axis}[
@@ -16,7 +16,7 @@ log basis y={10},
 tick align=outside,
 tick pos=left,
 x grid style={white!69.0196078431373!black},
-xlabel={\(\displaystyle N\)},
+xlabel={B-spline basis size \(\displaystyle n\)},
 xmajorgrids,
 xmin=6.96440450636899, xmax=147.03338943962,
 xminorgrids,
@@ -25,7 +25,7 @@ xtick style={color=black},
 y grid style={white!69.0196078431373!black},
 ylabel={storage [MB]},
 ymajorgrids,
-ymin=0.0108542784152931, ymax=0.631252353942404,
+ymin=0.0108274544473471, ymax=0.664920067686267,
 yminorgrids,
 ymode=log,
 ytick style={color=black}
@@ -33,21 +33,21 @@ ytick style={color=black}
 \addplot [semithick, red]
 table {%
 8 0.013056
-16 0.06912
-32 0.159744
-64 0.303616
-128 0.5248
+16 0.077312
+32 0.181248
+64 0.34048
+128 0.551424
 };
 \addlegendentry{TT}
 \addplot [semithick, green!50!black]
 table {%
-8 0.02464
-16 0.147504
-32 0.288672
-64 0.362576
-128 0.430512
+8 0.025664
+16 0.185216
+32 0.366176
+64 0.426064
+128 0.530688
 };
-\addlegendentry{QTT}
+\addlegendentry{QTT }
 \end{axis}
 
 \end{tikzpicture}

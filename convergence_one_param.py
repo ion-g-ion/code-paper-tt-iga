@@ -12,7 +12,7 @@ import pandas as pd
 
 tn.set_default_dtype(tn.float64)
 
-def solve(Ns,deg,nl,alpha=1/4,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = True,conventional = True, gpu_solver = False):
+def solve(Ns,deg,nl,alpha=1/3,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = True,conventional = True, gpu_solver = False):
    
     baza1 = tt_iga.BSplineBasis(np.linspace(0,1,Ns[0]-deg+1),deg)
     baza2 = tt_iga.BSplineBasis(np.linspace(0,1,Ns[1]-deg+1),deg)
@@ -103,7 +103,7 @@ def solve(Ns,deg,nl,alpha=1/4,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = 
     
     tme_solve_qtt = datetime.datetime.now()
     # if qtt: dofs_qtt = tntt.solvers.amen_solve(M_qtt.cuda(), rhs_qtt.cuda(), x0 = rhs_qtt.round(1e-10,1).cuda(), eps = eps_solver, nswp = 80, kickrank = 6, preconditioner='c').cpu()
-    if qtt: dofs_qtt = tntt.solvers.amen_solve(M_qtt, rhs_qtt, x0 = rhs_qtt.round(1e-10,1), eps = eps_solver, nswp = 80, kickrank = 6, preconditioner='c').cpu()
+    if qtt: dofs_qtt = tntt.solvers.amen_solve(M_qtt, rhs_qtt, x0 = rhs_qtt.round(1e-10,1), eps = eps_solver, nswp = 80, kickrank = 7, preconditioner='c').cpu()
     tme_solve_qtt = datetime.datetime.now() - tme_solve_qtt
     print('Time in QTT ',tme_solve_qtt,flush=True)
     tme_solve_qtt = tme_solve_qtt.total_seconds()
@@ -132,19 +132,19 @@ def solve(Ns,deg,nl,alpha=1/4,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = 
     if np.prod(N)<=64**3 and conventional:
         tme_stiff_classic = datetime.datetime.now()
         # stiff_sparse = iga_fem.construct_stiff_sparse([baza1, baza2, baza3],[geom.Xs[0][:,:,:,nl//2].numpy(), geom.Xs[1][:,:,:,nl//2].full(), geom.Xs[2][:,:,:,nl//2].full()])
-        stiff_sparse = iga_fem.construct_sparse_from_tt(Basis+Basis_param, Stiff_tt, [nl//2])
+        stiff_sparse = iga_fem.construct_sparse_from_tt(Basis+Basis_param, Stiff_tt, [nl-1])
         tme_stiff_classic = (datetime.datetime.now() - tme_stiff_classic).total_seconds() 
         print('Stiff time ',tme_stiff_classic)
 
         Pin, Pbd = iga_fem.boundary_matrices([baza1, baza2, baza3])
         
         M = Pin @ stiff_sparse + Pbd
-        rhs = Pin @ f_fun.dofs[:,:,:,nl//2].numpy().reshape([-1,1]) + Pbd @ uref_fun.dofs[:,:,:,nl//2].numpy().reshape([-1,1])
+        rhs = Pin @ f_fun.dofs[:,:,:,nl-1].numpy().reshape([-1,1]) + Pbd @ uref_fun.dofs[:,:,:,nl-1].numpy().reshape([-1,1])
         tme_gmres_classic = datetime.datetime.now()
         dofs = scipy.sparse.linalg.gmres(M,rhs,tol=eps_solver)[0]
         tme_gmres_classic = (datetime.datetime.now() - tme_gmres_classic).total_seconds() 
         print('GMRES time ',tme_gmres_classic)
-        err = np.linalg.norm(dofs_tt[:,:,:,nl//2].full()-dofs.reshape(N))/np.linalg.norm(dofs)
+        err = np.linalg.norm(dofs_tt[:,:,:,nl-1].full()-dofs.reshape(N))/np.linalg.norm(dofs)
         print('ERROR ',err)
     else:
         tme_gmres_classic = np.nan
@@ -193,11 +193,11 @@ plt.figure()
 plt.loglog(ns,df[df['deg']==1]['err_L2'].to_numpy(),'r')
 plt.loglog(ns,df[df['deg']==2]['err_L2'].to_numpy(),'g')
 plt.loglog(ns,df[df['deg']==3]['err_L2'].to_numpy(),'b')
-plt.loglog(ns,df[df['deg']==1]['err_L2'].to_numpy()[-2]*ns[-2]**2*1/np.array(ns)**2,'k:')
-plt.loglog(ns,df[df['deg']==2]['err_L2'].to_numpy()[-2]*ns[-2]**3*1/np.array(ns)**3,'k:')
-plt.loglog(ns,df[df['deg']==3]['err_L2'].to_numpy()[-2]*ns[-2]**4*1/np.array(ns)**4,'k:')
-plt.legend([r'linear',r'quadratic',r'cubic'])
-plt.gca().set_xlabel(r'Size of univariate B-spline basis $n$')
+plt.loglog(ns,df[df['deg']==1]['err_L2'].to_numpy()[-2]*ns[-2]**2*1/np.array(ns)**2,'r:')
+plt.loglog(ns,df[df['deg']==2]['err_L2'].to_numpy()[-2]*ns[-2]**3*1/np.array(ns)**3,'g:')
+plt.loglog(ns,df[df['deg']==3]['err_L2'].to_numpy()[-2]*ns[-2]**4*1/np.array(ns)**4,'b:')
+plt.legend([r'linear',r'quadratic',r'cubic',r'$\mathcal{O}(n^{-2})$ line',r'$\mathcal{O}(n^{-3})$ line',r'$\mathcal{O}(n^{-4})$ line'])
+plt.gca().set_xlabel(r'B-spline basis size $n$')
 plt.gca().set_ylabel(r'relative errors')
 plt.grid(True, which="both", ls="-")
 tikzplotlib.save('data/conv_err.tex')
@@ -206,7 +206,7 @@ plt.figure()
 plt.loglog(ns,df[df['deg']==2]['storage_tt'].to_numpy(),'r')
 plt.loglog(ns,df[df['deg']==2]['storage_qtt'].to_numpy(),'g')
 plt.legend([r'TT',r'QTT '])
-plt.gca().set_xlabel(r'Size of univariate B-spline basis $n$')
+plt.gca().set_xlabel(r'B-spline basis size $n$')
 plt.gca().set_ylabel(r'storage [MB]')
 plt.grid(True, which="both", ls="-")
 tikzplotlib.save('data/conv_storage.tex')
@@ -217,8 +217,8 @@ plt.loglog(ns,df[df['deg']==2]['time_solve_qtt'].to_numpy(),'g')
 plt.loglog(ns,df[df['deg']==2]['time_gmres'].to_numpy(),'b')
 plt.loglog(np.array(ns),np.array(ns)**2/200,'k:')
 plt.ylabel('time [s]')
-plt.xlabel(r'Size of univariate B-spline basis $n$')
-plt.legend(['TT (entire parameter grid)','QTT (entire parameter grid)','GMRES (one parameter)',r'$\mathcal{O}(n^{2})$ line'])
+plt.xlabel(r'B-spline basis size $n$')
+plt.legend(['TT (entire parameter grid)','QTT (entire parameter grid)','GMRES (single geometry)',r'$\mathcal{O}(n^{2})$ line'])
 plt.grid(True, which="both", ls="-")
 tikzplotlib.save('data/conv_time.tex')
 
@@ -226,8 +226,8 @@ plt.figure()
 plt.loglog(ns,df[df['deg']==2]['time_stiff'].to_numpy(),'r')
 plt.loglog(ns,df[df['deg']==2]['time_classic'].to_numpy(),'g')
 plt.ylabel('time [s]')
-plt.xlabel(r'Size of univariate B-spline basis $n$')
-plt.legend(['TT (entire parameter grid)','conventional (one parameter)'])
+plt.xlabel(r'B-spline basis size $n$')
+plt.legend(['TT (entire parameter grid)','conventional (single geometry)'])
 plt.grid(True, which="both", ls="-")
 tikzplotlib.save('data/stiff_time.tex')
 
@@ -254,8 +254,8 @@ df2 = pd.DataFrame([[el for el in v.values() ] for v in results2], columns = [k 
 
 plt.figure()
 for nl in nls: plt.loglog(np.array(ns),df2[df2['nl']==nl]['err_L2'].to_numpy())
-plt.legend([str(tmp) for tmp in nls])
-plt.gca().set_xlabel(r'$n$')
+plt.legend([r'$\ell='+str(tmp)+r'$' for tmp in nls])
+plt.gca().set_xlabel(r'B-spline basis size $n$')
 plt.gca().set_ylabel(r'relative error')
 plt.grid(True, which="both", ls="-")
 tikzplotlib.save('data/conv_N_ell.tex')
@@ -296,6 +296,7 @@ for eps in epss:
         dct = solve(np.array([n]*3),2,nl,eps_solver=eps,conventional = False,qtt=False)
         dct['n'] = n
         dct['eps'] = eps
+        results3.append(dct)
 
 
 df3 = pd.DataFrame([[el for el in v.values() ] for v in results3], columns = [k for k in results3[0]])

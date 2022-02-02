@@ -54,8 +54,15 @@ def solve(Np, Ns = [40,20,80], deg = 2 ,nl = 8):
     tme = datetime.datetime.now() -tme
     print('Time mass matrix ',tme.total_seconds())
     
+    # if tn.cuda.is_available(): 
+    #     tme = datetime.datetime.now() 
+    #     Stt = geom.stiffness_interp( eps = 1e-9, qtt = True, verb=True, device = tn.device('cuda:0'))
+    #     tme = datetime.datetime.now() -tme
+    #     print('Time stiffness matrix GPU',tme.total_seconds())
+    #     dct['time stiff GPU'] = tme.total_seconds()
+    
     tme = datetime.datetime.now() 
-    Stt = geom.stiffness_interp( eps = 1e-9, qtt = True, verb=True)
+    Stt = geom.stiffness_interp( eps = 1e-9, qtt = True, verb=True, device = None)
     tme = datetime.datetime.now() -tme
     print('Time stiffness matrix ',tme.total_seconds())
     dct['time stiff'] = tme.total_seconds()
@@ -83,12 +90,17 @@ def solve(Np, Ns = [40,20,80], deg = 2 ,nl = 8):
     # solve the system
     eps_solver = 1e-7
     tme_amen = datetime.datetime.now() 
-    # dofs_tt = tntt.solvers.amen_solve(M_tt.cuda(), rhs_tt.cuda(), x0 = tntt.ones(rhs_tt.N).cuda(), eps = eps_solver, nswp = 40, preconditioner = 'c', verbose = False).cpu()
-    dofs_tt = tntt.solvers.amen_solve(M_tt, rhs_tt, x0 = tntt.ones(rhs_tt.N), eps = eps_solver, nswp = 40, preconditioner = 'c',  verbose = False)
+    dofs_tt = tntt.solvers.amen_solve(M_tt, rhs_tt, x0 = tntt.ones(rhs_tt.N), eps = eps_solver, nswp = 50, preconditioner = 'c',  verbose = False)
     tme_amen = (datetime.datetime.now() -tme_amen).total_seconds() 
     dct['time solver'] = tme_amen
-
     print('Time solver', tme_amen)
+    
+    if tn.cuda.is_available():
+        tme_amen_gpu = datetime.datetime.now()
+        dofs_tt = tntt.solvers.amen_solve(M_tt.cuda(), rhs_tt.cuda(), x0 = tntt.ones(rhs_tt.N).cuda(), eps = eps_solver, nswp = 50, preconditioner = 'c', verbose = False).cpu()
+        tme_amen_gpu = (datetime.datetime.now() -tme_amen_gpu).total_seconds() 
+        dct['time solver GPU'] = tme_amen_gpu
+        print('Time solver GPU', tme_amen_gpu)
     
     # save stats in the dictionary
     dct['rank matrix'] = np.mean(M_tt.R)
@@ -133,6 +145,5 @@ if __name__ == '__main__':
     # print header 
     df = pd.DataFrame([[el for el in v.values() ] for v in dct_results.values()], columns = [k for k in dct_results[2]])
     print(df)
-    df.to_pickle('./data/chshape.pickle')
-    
+    df.to_pickle('./data/cshape_gpu.pickle')
     eoc = lambda x,y: np.log(y[1:]/y[:-1])/np.log(x[1:]/x[:-1])

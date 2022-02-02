@@ -355,6 +355,17 @@ class Geometry():
         g11, g21, g31 = GTT(ps, self.basis, self.Xs, (True,False,False))
         g12, g22, g32 = GTT(ps, self.basis, self.Xs, (False,True,False))
         g13, g23, g33 = GTT(ps, self.basis, self.Xs, (False,False,True))
+        if device!=None:
+            g11 = g11.to(device)
+            g12 = g12.to(device)
+            g13 = g13.to(device)
+            g21 = g21.to(device)
+            g22 = g22.to(device)
+            g23 = g23.to(device)
+            g31 = g31.to(device)
+            g32 = g32.to(device)
+            g33 = g33.to(device)
+
         if verb:
             print(g11.R) 
             print(g12.R) 
@@ -380,8 +391,8 @@ class Geometry():
         tme = datetime.datetime.now() -tme
         if verb: print('H computed in' , tme)
         
-        Bs = [tn.tensor(self.basis[i](ps[i]).transpose()) for i in range(3)]
-        dBs = [tn.tensor(self.basis[i](ps[i],derivative = True).transpose()) for i in range(3)]
+        Bs = [tn.tensor(self.basis[i](ps[i]).transpose()).to(device) for i in range(3)]
+        dBs = [tn.tensor(self.basis[i](ps[i],derivative = True).transpose()).to(device) for i in range(3)]
                 
         N = self.Xs[0].N
         S = None
@@ -413,7 +424,7 @@ class Geometry():
                     tmp = tmp*Ogi_tt
                     tmp = tmp.round(eps,rankinv)
                 else:
-                    tmp = tntt.elementwise_divide(tmp,Og_tt, starting_tensor = tmp, eps=eps,kick=8, nswp = 50)*F_tt 
+                    tmp = tntt.elementwise_divide(tmp,Og_tt, starting_tensor = tmp, eps=eps,kick=8, nswp = 50, local_iterations = 20, resets = 4)*F_tt 
                     # tmp = tmp*Ogi_tt*F_tt
 
             #  print('Rank of product',tmp.r)
@@ -446,7 +457,7 @@ class Geometry():
                 
                 
                 tme = datetime.datetime.now()
-                ss = tntt.TT([tn.tensor(bandcore2ttcore(cores[i].numpy(),band_size[i])) for i in range(len(cores))])
+                ss = tntt.TT([tn.tensor(bandcore2ttcore(cores[i].cpu().numpy(),band_size[i])) for i in range(len(cores))]).to(device)
 
                 
                 SS = ss if SS==None else SS+ss 
@@ -462,7 +473,7 @@ class Geometry():
             if verb: print('\ttime ROUND ' , tme)
         
         cores = SS.cores
-        SS = tntt.TT([tn.tensor(ttcore2bandcore(cores[i].numpy(),N[i],band_size[i])) for i in range(len(N))])
+        SS = tntt.TT([tn.tensor(ttcore2bandcore(cores[i].cpu().numpy(),N[i],band_size[i])) for i in range(len(N))])
 
         return SS
 
