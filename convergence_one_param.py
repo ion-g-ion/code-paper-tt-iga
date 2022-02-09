@@ -12,7 +12,7 @@ import pandas as pd
 
 tn.set_default_dtype(tn.float64)
 
-def solve(Ns,deg,nl,alpha=1/3,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = True,conventional = True, gpu_solver = False):
+def solve(Ns,deg,nl,alpha=1/4,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = True,conventional = True, gpu_solver = False):
    
     baza1 = tt_iga.BSplineBasis(np.linspace(0,1,Ns[0]-deg+1),deg)
     baza2 = tt_iga.BSplineBasis(np.linspace(0,1,Ns[1]-deg+1),deg)
@@ -234,8 +234,8 @@ tikzplotlib.save('data/stiff_time.tex')
 
 
 #%% interpolation level
-nls = [3,4,5,6,7,8,9]
-ns = [10,11,12,13,14,15,17,19,20,22,24,26,28,30,40,50,60,70,80,90,100,110,120,130,140,150]
+nls = [3,4,5,6,7,8,9,10]
+ns = [10,11,12,13,14,15,17,19,20,22,24,26,28,30,40,50,60,70,80,90,100,110,120,130,140]
 
 
 results2 = []
@@ -282,29 +282,30 @@ tikzplotlib.save('data/conv_ell.tex')
 # plt.grid(True, which="both", ls="-")
 
 #%% interpolation level
-epss = [12-4,1e-5,1e-6,1e-7,1e-8]
-ns = [16,32,64,128]
-nl = 8
-
-
-results3 = []
-for eps in epss:
-    for n in ns:
-        print()
-        print('#####################')
-        print('eps ',eps, ' N ',n)
-        dct = solve(np.array([n]*3),2,nl,eps_solver=eps,conventional = False,qtt=False)
-        dct['n'] = n
-        dct['eps'] = eps
-        results3.append(dct)
-
-
-df3 = pd.DataFrame([[el for el in v.values() ] for v in results3], columns = [k for k in results3[0]])
-
-plt.figure()
-for eps in epss: plt.loglog(np.array(ns),df3[df3['eps']==eps]['err_L2'].to_numpy())
-plt.gca().set_xlabel(r'$n$')
-plt.gca().set_ylabel(r'relative error')
-plt.legend([r'$\epsilon=10^{'+str(int(np.log10(tmp)))+r'}$' for tmp in epss])
-plt.grid()
-tikzplotlib.save('data/conv_eps.tex')
+# epss = [12-4,1e-5,1e-6,1e-7,1e-8]
+# ns = [16,32,64,128]
+# nl = 8
+# 
+# 
+# results3 = []
+# for eps in epss:
+#     for n in ns:
+#         print()
+#         print('#####################')
+#         print('eps ',eps, ' N ',n)
+#         dct = solve(np.array([n]*3),2,nl,eps_solver=eps,conventional = False,qtt=False)
+#         dct['n'] = n
+#         dct['eps'] = eps
+#         results3.append(dct)
+# 
+# 
+# df3 = pd.DataFrame([[el for el in v.values() ] for v in results3], columns = [k for k in results3[0]])
+# 
+# plt.figure()
+# for eps in epss: plt.loglog(np.array(ns),df3[df3['eps']==eps]['err_L2'].to_numpy())
+# plt.gca().set_xlabel(r'$n$')
+# plt.gca().set_ylabel(r'relative error')
+# plt.legend([r'$\epsilon=10^{'+str(int(np.log10(tmp)))+r'}$' for tmp in epss])
+# plt.grid()
+# tikzplotlib.save('data/conv_eps.tex')
+# 

@@ -8,6 +8,7 @@ import numpy as np
 import datetime
 import matplotlib.colors
 import scipy.sparse.linalg 
+import pandas as pd
 
 tn.set_default_dtype(tn.float64)
 
@@ -19,7 +20,7 @@ def iga_solve(deg, n, nl):
     print('#'*32)
     print()
     
-    results = dict()
+    results = {'n' : n ,'deg' : deg ,'nl' : nl}
     
     Ns = np.array(3*[n])-deg+1
     baza1 = tt_iga.BSplineBasis(np.concatenate((np.linspace(0,0.5,Ns[0]//2),np.linspace(0.5,1,Ns[0]//2))),deg)
@@ -152,7 +153,7 @@ if __name__ == "__main__":
     Ncv = 100
     params = np.random.rand(Ncv,4)*0.1-0.05
     
-    dct_results =dict()
+    results = []
     
     
     degs = [2]
@@ -161,10 +162,11 @@ if __name__ == "__main__":
     for deg in degs:
         for n in ns:
             for nl in nls:
-                
-                
                 res = iga_solve(deg, n, nl)
-                dct_results[(deg,n,nl)] = res
+                results.append(res)
+    
+    df = pd.DataFrame([[el for el in v.values() ] for v in results], columns = [k for k in results[0]])
+    print(df)
 
 
     

@@ -250,7 +250,24 @@ class Geometry():
        
         res = (det1 + det2 + det3 - det4 - det5 - det6).round(eps)
         return res 
-
+    
+    def integral_tensor(self,eps = 1e-12):
+        """
+        
+        
+        """ 
+        p1, w1 = points_basis(self.basis[0])
+        p2, w2 = points_basis(self.basis[1])
+        p3, w3 = points_basis(self.basis[2])
+    
+        cores = self.eval_omega([tn.tensor(p1),tn.tensor(p2),tn.tensor(p3)], eps).cores
+        
+        cores[0] = tn.einsum('ijk,j,lj->ilk',cores[0],tn.tensor(w1),tn.tensor(self.basis[0](p1)))
+        cores[1] = tn.einsum('ijk,j,lj->ilk',cores[1],tn.tensor(w2),tn.tensor(self.basis[1](p2)))
+        cores[2] = tn.einsum('ijk,j,lj->ilk',cores[2],tn.tensor(w3),tn.tensor(self.basis[2](p3)))
+        
+        return tntt.TT(cores)
+        
     def mass_interp(self, eps = 1e-12):
         """
         
@@ -323,7 +340,7 @@ class Geometry():
         if not qtt:
             tme = datetime.datetime.now()
             # Ogi_tt = 1/Og_tt
-            Ogi_tt = tntt.elementwise_divide(tntt.ones(Og_tt.N, dtype = tn.float64, device = device), Og_tt, eps = eps, starting_tensor = None, nswp = 50, kick = 8)
+            Ogi_tt = tntt.elementwise_divide(tntt.ones(Og_tt.N, dtype = tn.float64, device = device), Og_tt, eps = eps, starting_tensor = None, nswp = 50, kick = 8,  verbose = False, preconditioner = 'c')
             tme = datetime.datetime.now() -tme
             if verb: print('time omega inv' , tme,' rank ',Ogi_tt.R,flush=True)
             #if verb: print('invert error ',(Ogi_tt*Og_tt-tt.ones(Og_tt.n)).norm()/tt.ones(Og_tt.n).norm())
@@ -424,7 +441,7 @@ class Geometry():
                     tmp = tmp*Ogi_tt
                     tmp = tmp.round(eps,rankinv)
                 else:
-                    tmp = tntt.elementwise_divide(tmp,Og_tt, starting_tensor = tmp, eps=eps,kick=8, nswp = 50, local_iterations = 20, resets = 4)*F_tt 
+                    tmp = tntt.elementwise_divide(tmp,Og_tt, starting_tensor = tmp, eps=eps,kick=8, nswp = 50, local_iterations = 20, resets = 4, preconditioner = 'c')*F_tt 
                     # tmp = tmp*Ogi_tt*F_tt
 
             #  print('Rank of product',tmp.r)
