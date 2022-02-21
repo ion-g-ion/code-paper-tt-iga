@@ -144,7 +144,7 @@ M_tt = M_tt.round(1e-11)
 
 # M_qtt = ttm2qttm(M_tt).round(1e-9)
 # rhs_qtt = tt2qtt(rhs_tt)
-cuda = True
+cuda = False
 print('Solving in TT...')
 tme_amen = datetime.datetime.now() 
 if cuda and tn.cuda.is_available():

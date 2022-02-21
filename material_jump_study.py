@@ -90,14 +90,16 @@ def iga_solve(deg, n, nl):
     g_tt = Pbd_tt @ (tntt.TT(tmp) ** tntt.ones([nl]*4))
 
 
-    M_tt = Pin_tt@Stt@Pin_tt + Pbd_tt
-    rhs_tt = Pin_tt @ (Mass_tt @ f_tt - Stt@Pbd_tt@g_tt).round(1e-12) + g_tt
+    # M_tt = Pin_tt@Stt@Pin_tt + Pbd_tt
+    # rhs_tt = Pin_tt @ (Mass_tt @ f_tt - Stt@Pbd_tt@g_tt).round(1e-12) + g_tt
+    M_tt = Pin_tt@Stt+Pbd_tt
+    rhs_tt = (g_tt).round(1e-11)
     M_tt = M_tt.round(1e-9)
     # print(M_tt,rhs_tt)
 
 
     # solve in the TT format
-    eps_solver = 1e-8
+    eps_solver = 1e-7
 
     print('Solving in TT...')
     tme_amen = datetime.datetime.now() 
@@ -118,6 +120,8 @@ def iga_solve(deg, n, nl):
     results['storage dofs'] = tntt.numel(dofs_tt)*8/1e6    
     results['rank solution'] = dofs_tt.R
     results['rank system'] = M_tt.R
+    results['mean rank solution'] = np.mean(dofs_tt.R)
+    results['mean rank system'] = np.mean(M_tt.R)
     results['time solver'] = tme_amen
     
     tme_stiff_classic = datetime.datetime.now()
@@ -125,7 +129,7 @@ def iga_solve(deg, n, nl):
     stiff_sparse = iga_fem.construct_sparse_from_tt(Basis+Basis_param,Stt,[0,0,0,0])
     tme_stiff_classic = (datetime.datetime.now() - tme_stiff_classic).total_seconds() 
 
-    print('Stiff time ',tme_stiff_classic)
+    print('Stiff time (conventional) ',tme_stiff_classic)
     results['time stiff classic'] = tme_stiff_classic
 
     Pin, Pbd = iga_fem.boundary_matrices([baza1, baza2, baza3], opened = [[1,1],[1,1],[0,0]])
@@ -157,7 +161,7 @@ if __name__ == "__main__":
     
     
     degs = [2]
-    ns = [20,30,40,50,60,70,80]
+    ns = [20,30,40,50,60,80]
     nls = [12]
     for deg in degs:
         for n in ns:
