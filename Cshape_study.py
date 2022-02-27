@@ -134,7 +134,7 @@ def solve(Np, Ns = [40,20,80], deg = 2 ,nl = 8):
 
 if __name__ == '__main__':
 
-    Nps = [2,3,4,5,6,7,8,9,10,11,12]
+    Nps = [2,3,4,5,6,7,8,9,10]
 
     dct_results = dict()
 
