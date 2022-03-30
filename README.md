@@ -13,6 +13,9 @@ For using just the TT-IGA package:
  * `opt_einsum`
  * `matplotlib`
  * `pandas`
+
+Optional dependencies to run the reference FEM solver are:
+ * `fenics`
  
 
 
