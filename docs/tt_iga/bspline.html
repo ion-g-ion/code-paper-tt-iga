@@ -41,6 +41,7 @@ class BSplineBasis:
      
     def __init__(self,knots,deg):
         &#34;&#34;&#34;
+
         
 
         Example:
@@ -62,7 +63,7 @@ class BSplineBasis:
         ```
 
         Args:
-            knots (numpy.array): _description_
+            knots (numpy.array): The konts of the B-spline basis. Must be sorted in ascending order. No need to repeat the first and the last knot in the sequence since this is done automatically depending on the degree `deg`.
             deg (int): The degree of the B-Spline basis.
         &#34;&#34;&#34;
         self.N=knots.size+deg-1
@@ -118,6 +119,18 @@ class BSplineBasis:
         
     
     def __call__(self,x,i=None,derivative=False):
+        &#34;&#34;&#34;
+        Evaluate the speciffic B-spline basis for the given input vector.
+
+        Args:
+            x (numpy.array): the vector where the B-splines are evaluated. The shape of the vector must be `(n,)`
+            i (int, optional): In case an integer is provided only the `i`-th basis is evauated. Defaults to None.
+            derivative (bool, optional): Evaluate the derivatives. Defaults to False.
+
+        Returns:
+            numpy.array: The result. The shape is `(M,n)` where `n` is the shape of the input vector and `M` is the size of the B-spline basis.
+        &#34;&#34;&#34;
+
         if i==None:
             if derivative:
                 ret = np.array([self.dspl[i](x) for i in range(self.N)])
@@ -131,18 +144,32 @@ class BSplineBasis:
             else:
                 return self.spl[i](x)
             
-    def greville(self):
-        return np.array([np.sum(self.knots[i+1:i+self.deg+1]) for i in range(self.N)])/(self.deg)
-        # return np.array([np.sum(self.knots[i+2:i+self.deg+2]) for i in range(self.N)])/(self.deg-1)
+    # def greville(self):
+    #    return np.array([np.sum(self.knots[i+1:i+self.deg+1]) for i in range(self.N)])/(self.deg)
+    #    # return np.array([np.sum(self.knots[i+2:i+self.deg+2]) for i in range(self.N)])/(self.deg-1)
         
     def interpolating_points(self):
+        &#34;&#34;&#34;
+        
+
+        Returns:
+            _type_: _description_
+        &#34;&#34;&#34;
         pts = np.array([np.sum(self.knots[i+1:i+self.deg+1]) for i in range(self.N)])/(self.deg)
         Mat = self.__call__(pts)
         return pts, Mat
         
-    def abscissae(self):
-        return self.greville()
+
     def collocation_points(self,mult = 1):
+        &#34;&#34;&#34;
+        
+
+        Args:
+            mult (int, optional): _description_. Defaults to 1.
+
+        Returns:
+            _type_: _description_
+        &#34;&#34;&#34;
         pts = []
         ws = []
         Pts, Ws = np.polynomial.legendre.leggauss(mult*(self.deg+1))
@@ -213,7 +240,7 @@ plt.plot(x,basis2(x).T)
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>knots</code></strong> :&ensp;<code>numpy.array</code></dt>
-<dd><em>description</em></dd>
+<dd>The konts of the B-spline basis. Must be sorted in ascending order. No need to repeat the first and the last knot in the sequence since this is done automatically depending on the degree <code>deg</code>.</dd>
 <dt><strong><code>deg</code></strong> :&ensp;<code>int</code></dt>
 <dd>The degree of the B-Spline basis.</dd>
 </dl></div>
@@ -225,6 +252,7 @@ plt.plot(x,basis2(x).T)
      
     def __init__(self,knots,deg):
         &#34;&#34;&#34;
+
         
 
         Example:
@@ -246,7 +274,7 @@ plt.plot(x,basis2(x).T)
         ```
 
         Args:
-            knots (numpy.array): _description_
+            knots (numpy.array): The konts of the B-spline basis. Must be sorted in ascending order. No need to repeat the first and the last knot in the sequence since this is done automatically depending on the degree `deg`.
             deg (int): The degree of the B-Spline basis.
         &#34;&#34;&#34;
         self.N=knots.size+deg-1
@@ -302,6 +330,18 @@ plt.plot(x,basis2(x).T)
         
     
     def __call__(self,x,i=None,derivative=False):
+        &#34;&#34;&#34;
+        Evaluate the speciffic B-spline basis for the given input vector.
+
+        Args:
+            x (numpy.array): the vector where the B-splines are evaluated. The shape of the vector must be `(n,)`
+            i (int, optional): In case an integer is provided only the `i`-th basis is evauated. Defaults to None.
+            derivative (bool, optional): Evaluate the derivatives. Defaults to False.
+
+        Returns:
+            numpy.array: The result. The shape is `(M,n)` where `n` is the shape of the input vector and `M` is the size of the B-spline basis.
+        &#34;&#34;&#34;
+
         if i==None:
             if derivative:
                 ret = np.array([self.dspl[i](x) for i in range(self.N)])
@@ -315,18 +355,32 @@ plt.plot(x,basis2(x).T)
             else:
                 return self.spl[i](x)
             
-    def greville(self):
-        return np.array([np.sum(self.knots[i+1:i+self.deg+1]) for i in range(self.N)])/(self.deg)
-        # return np.array([np.sum(self.knots[i+2:i+self.deg+2]) for i in range(self.N)])/(self.deg-1)
+    # def greville(self):
+    #    return np.array([np.sum(self.knots[i+1:i+self.deg+1]) for i in range(self.N)])/(self.deg)
+    #    # return np.array([np.sum(self.knots[i+2:i+self.deg+2]) for i in range(self.N)])/(self.deg-1)
         
     def interpolating_points(self):
+        &#34;&#34;&#34;
+        
+
+        Returns:
+            _type_: _description_
+        &#34;&#34;&#34;
         pts = np.array([np.sum(self.knots[i+1:i+self.deg+1]) for i in range(self.N)])/(self.deg)
         Mat = self.__call__(pts)
         return pts, Mat
         
-    def abscissae(self):
-        return self.greville()
+
     def collocation_points(self,mult = 1):
+        &#34;&#34;&#34;
+        
+
+        Args:
+            mult (int, optional): _description_. Defaults to 1.
+
+        Returns:
+            _type_: _description_
+        &#34;&#34;&#34;
         pts = []
         ws = []
         Pts, Ws = np.polynomial.legendre.leggauss(mult*(self.deg+1))
@@ -366,29 +420,34 @@ plt.plot(x,basis2(x).T)
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="tt_iga.bspline.BSplineBasis.abscissae"><code class="name flex">
-<span>def <span class="ident">abscissae</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def abscissae(self):
-    return self.greville()</code></pre>
-</details>
-</dd>
 <dt id="tt_iga.bspline.BSplineBasis.collocation_points"><code class="name flex">
 <span>def <span class="ident">collocation_points</span></span>(<span>self, mult=1)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>mult</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd><em>description</em>. Defaults to 1.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>_type_</code></dt>
+<dd><em>description</em></dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def collocation_points(self,mult = 1):
+    &#34;&#34;&#34;
+    
+
+    Args:
+        mult (int, optional): _description_. Defaults to 1.
+
+    Returns:
+        _type_: _description_
+    &#34;&#34;&#34;
     pts = []
     ws = []
     Pts, Ws = np.polynomial.legendre.leggauss(mult*(self.deg+1))
@@ -430,20 +489,6 @@ plt.plot(x,basis2(x).T)
     return BSpline(self.knots,c,self.deg)(x)</code></pre>
 </details>
 </dd>
-<dt id="tt_iga.bspline.BSplineBasis.greville"><code class="name flex">
-<span>def <span class="ident">greville</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def greville(self):
-    return np.array([np.sum(self.knots[i+1:i+self.deg+1]) for i in range(self.N)])/(self.deg)
-    # return np.array([np.sum(self.knots[i+2:i+self.deg+2]) for i in range(self.N)])/(self.deg-1)</code></pre>
-</details>
-</dd>
 <dt id="tt_iga.bspline.BSplineBasis.integrate"><code class="name flex">
 <span>def <span class="ident">integrate</span></span>(<span>self)</span>
 </code></dt>
@@ -471,12 +516,22 @@ plt.plot(x,basis2(x).T)
 <span>def <span class="ident">interpolating_points</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>_type_</code></dt>
+<dd><em>description</em></dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def interpolating_points(self):
+    &#34;&#34;&#34;
+    
+
+    Returns:
+        _type_: _description_
+    &#34;&#34;&#34;
     pts = np.array([np.sum(self.knots[i+1:i+self.deg+1]) for i in range(self.N)])/(self.deg)
     Mat = self.__call__(pts)
     return pts, Mat</code></pre>
@@ -519,11 +574,9 @@ plt.plot(x,basis2(x).T)
 <li>
 <h4><code><a title="tt_iga.bspline.BSplineBasis" href="#tt_iga.bspline.BSplineBasis">BSplineBasis</a></code></h4>
 <ul class="">
-<li><code><a title="tt_iga.bspline.BSplineBasis.abscissae" href="#tt_iga.bspline.BSplineBasis.abscissae">abscissae</a></code></li>
 <li><code><a title="tt_iga.bspline.BSplineBasis.collocation_points" href="#tt_iga.bspline.BSplineBasis.collocation_points">collocation_points</a></code></li>
 <li><code><a title="tt_iga.bspline.BSplineBasis.derivative" href="#tt_iga.bspline.BSplineBasis.derivative">derivative</a></code></li>
 <li><code><a title="tt_iga.bspline.BSplineBasis.eval_all" href="#tt_iga.bspline.BSplineBasis.eval_all">eval_all</a></code></li>
-<li><code><a title="tt_iga.bspline.BSplineBasis.greville" href="#tt_iga.bspline.BSplineBasis.greville">greville</a></code></li>
 <li><code><a title="tt_iga.bspline.BSplineBasis.integrate" href="#tt_iga.bspline.BSplineBasis.integrate">integrate</a></code></li>
 <li><code><a title="tt_iga.bspline.BSplineBasis.interpolating_points" href="#tt_iga.bspline.BSplineBasis.interpolating_points">interpolating_points</a></code></li>
 <li><code><a title="tt_iga.bspline.BSplineBasis.plot" href="#tt_iga.bspline.BSplineBasis.plot">plot</a></code></li>

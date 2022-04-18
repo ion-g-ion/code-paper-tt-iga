@@ -128,11 +128,11 @@ class LagrangeLeg:
     
     def __init__(self,deg,interval = [-1,1]):
         &#34;&#34;&#34;
-        Creates a Lagrange polynomials basis of degree `deg` corresponding to the Gauss-Legendre nodes (scaled ).
+        Creates a Lagrange polynomials basis of degree `deg` corresponding to the Gauss-Legendre nodes (scaled to a given interval).
 
         Args:
             deg (int): the dimension of the basis.
-            interval (list, optional): the interval. Defaults to [-1,1].
+            interval (list, optional): the interval $I$ where the polynomials are defined. Defaults to [-1,1].
         &#34;&#34;&#34;
         self.N=deg
 
@@ -436,13 +436,13 @@ class LagrangeLeg:
 <span>(</span><span>deg, interval=[-1, 1])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Creates a Lagrange polynomials basis of degree <code>deg</code> corresponding to the Gauss-Legendre nodes (scaled ).</p>
+<div class="desc"><p>Creates a Lagrange polynomials basis of degree <code>deg</code> corresponding to the Gauss-Legendre nodes (scaled to a given interval).</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>deg</code></strong> :&ensp;<code>int</code></dt>
 <dd>the dimension of the basis.</dd>
 <dt><strong><code>interval</code></strong> :&ensp;<code>list</code>, optional</dt>
-<dd>the interval. Defaults to [-1,1].</dd>
+<dd>the interval $I$ where the polynomials are defined. Defaults to [-1,1].</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -452,11 +452,11 @@ class LagrangeLeg:
     
     def __init__(self,deg,interval = [-1,1]):
         &#34;&#34;&#34;
-        Creates a Lagrange polynomials basis of degree `deg` corresponding to the Gauss-Legendre nodes (scaled ).
+        Creates a Lagrange polynomials basis of degree `deg` corresponding to the Gauss-Legendre nodes (scaled to a given interval).
 
         Args:
             deg (int): the dimension of the basis.
-            interval (list, optional): the interval. Defaults to [-1,1].
+            interval (list, optional): the interval $I$ where the polynomials are defined. Defaults to [-1,1].
         &#34;&#34;&#34;
         self.N=deg
 

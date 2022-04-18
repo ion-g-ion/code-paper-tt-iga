@@ -11,6 +11,7 @@ class BSplineBasis:
      
     def __init__(self,knots,deg):
         """
+
         
 
         Example:
@@ -32,7 +33,7 @@ class BSplineBasis:
         ```
 
         Args:
-            knots (numpy.array): _description_
+            knots (numpy.array): The konts of the B-spline basis. Must be sorted in ascending order. No need to repeat the first and the last knot in the sequence since this is done automatically depending on the degree `deg`.
             deg (int): The degree of the B-Spline basis.
         """
         self.N=knots.size+deg-1
@@ -88,6 +89,18 @@ class BSplineBasis:
         
     
     def __call__(self,x,i=None,derivative=False):
+        """
+        Evaluate the speciffic B-spline basis for the given input vector.
+
+        Args:
+            x (numpy.array): the vector where the B-splines are evaluated. The shape of the vector must be `(n,)`
+            i (int, optional): In case an integer is provided only the `i`-th basis is evauated. Defaults to None.
+            derivative (bool, optional): Evaluate the derivatives. Defaults to False.
+
+        Returns:
+            numpy.array: The result. The shape is `(M,n)` where `n` is the shape of the input vector and `M` is the size of the B-spline basis.
+        """
+
         if i==None:
             if derivative:
                 ret = np.array([self.dspl[i](x) for i in range(self.N)])
@@ -101,18 +114,32 @@ class BSplineBasis:
             else:
                 return self.spl[i](x)
             
-    def greville(self):
-        return np.array([np.sum(self.knots[i+1:i+self.deg+1]) for i in range(self.N)])/(self.deg)
-        # return np.array([np.sum(self.knots[i+2:i+self.deg+2]) for i in range(self.N)])/(self.deg-1)
+    # def greville(self):
+    #    return np.array([np.sum(self.knots[i+1:i+self.deg+1]) for i in range(self.N)])/(self.deg)
+    #    # return np.array([np.sum(self.knots[i+2:i+self.deg+2]) for i in range(self.N)])/(self.deg-1)
         
     def interpolating_points(self):
+        """
+        
+
+        Returns:
+            _type_: _description_
+        """
         pts = np.array([np.sum(self.knots[i+1:i+self.deg+1]) for i in range(self.N)])/(self.deg)
         Mat = self.__call__(pts)
         return pts, Mat
         
-    def abscissae(self):
-        return self.greville()
+
     def collocation_points(self,mult = 1):
+        """
+        
+
+        Args:
+            mult (int, optional): _description_. Defaults to 1.
+
+        Returns:
+            _type_: _description_
+        """
         pts = []
         ws = []
         Pts, Ws = np.polynomial.legendre.leggauss(mult*(self.deg+1))

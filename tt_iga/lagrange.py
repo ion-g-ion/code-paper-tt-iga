@@ -99,11 +99,11 @@ class LagrangeLeg:
     
     def __init__(self,deg,interval = [-1,1]):
         """
-        Creates a Lagrange polynomials basis of degree `deg` corresponding to the Gauss-Legendre nodes (scaled ).
+        Creates a Lagrange polynomials basis of degree `deg` corresponding to the Gauss-Legendre nodes (scaled to a given interval).
 
         Args:
             deg (int): the dimension of the basis.
-            interval (list, optional): the interval. Defaults to [-1,1].
+            interval (list, optional): the interval $I$ where the polynomials are defined. Defaults to [-1,1].
         """
         self.N=deg
 

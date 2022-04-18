@@ -18,6 +18,7 @@ For using just the TT-IGA package:
  * `scipy`
 
 Optional dependencies to run the reference FEM solver are:
+
  * `fenics`
  
 ### Using pip
