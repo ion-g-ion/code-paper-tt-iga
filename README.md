@@ -21,10 +21,10 @@ Optional dependencies to run the reference FEM solver are:
  
 ### Using pip
 
-You can install the package using the following `pip` command:
+You can install the package using the following `pip` command after cloning the repository:
 
 ```
-pip install git+https://github.com/ion-g-ion/code-paper-tt-iga
+pip install .
 ```
 
 ## Packages
