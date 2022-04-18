@@ -98,7 +98,13 @@ class Lagrange:
 class LagrangeLeg:
     
     def __init__(self,deg,interval = [-1,1]):
-        
+        """
+        Creates a Lagrange polynomials basis of degree `deg` corresponding to the Gauss-Legendre nodes (scaled ).
+
+        Args:
+            deg (int): the dimension of the basis.
+            interval (list, optional): the interval. Defaults to [-1,1].
+        """
         self.N=deg
 
         self.interval = interval
@@ -138,6 +144,17 @@ class LagrangeLeg:
         
     
     def __call__(self,x,i=None,derivative=False):
+        """
+        
+
+        Args:
+            x (_type_): _description_
+            i (_type_, optional): _description_. Defaults to None.
+            derivative (bool, optional): _description_. Defaults to False.
+
+        Returns:
+            _type_: _description_
+        """
         if i==None:
             if derivative:
                 ret = np.array([self.dbasis[i](x) for i in range(self.N)])

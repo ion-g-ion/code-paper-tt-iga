@@ -1,7 +1,5 @@
 """
-Created on Fri Jun 25 14:37:37 2021
-
-@author: yonnss
+This module contains functions for computing the operators in sparse format (no TT) and computing the full sparse matrix from the TT decomposition.
 """
 import numpy as np
 import scipy.sparse

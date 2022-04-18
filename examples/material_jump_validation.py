@@ -1,7 +1,7 @@
 import torch as tn
 import torchtt as tntt
 import matplotlib.pyplot as plt
-from tt_iga import *
+import tt_iga 
 import numpy as np
 import datetime
 import matplotlib.colors
@@ -11,15 +11,15 @@ tn.set_default_dtype(tn.float64)
 #%% Create the bases for the space and parameters
 deg = 2
 Ns = np.array(3*[64])-deg+1
-baza1 = BSplineBasis(np.concatenate((np.linspace(0,0.5,Ns[0]//2),np.linspace(0.5,1,Ns[0]//2))),deg)
-baza2 = BSplineBasis(np.linspace(0,1,Ns[1]),deg)
-baza3 = BSplineBasis(np.concatenate((np.linspace(0,0.3,Ns[2]//3),np.linspace(0.3,0.7,Ns[2]//3),np.linspace(0.7,1,Ns[2]//3))),deg)
+baza1 = tt_iga.bspline.BSplineBasis(np.concatenate((np.linspace(0,0.5,Ns[0]//2),np.linspace(0.5,1,Ns[0]//2))),deg)
+baza2 = tt_iga.bspline.BSplineBasis(np.linspace(0,1,Ns[1]),deg)
+baza3 = tt_iga.bspline.BSplineBasis(np.concatenate((np.linspace(0,0.3,Ns[2]//3),np.linspace(0.3,0.7,Ns[2]//3),np.linspace(0.7,1,Ns[2]//3))),deg)
 
 Basis = [baza1,baza2,baza3]
 N = [baza1.N,baza2.N,baza3.N]
 
 nl = 12
-Basis_param = [LagrangeLeg(nl,[-0.05,0.05])]*4
+Basis_param = [tt_iga.lagrange.LagrangeLeg(nl,[-0.05,0.05])]*4
 
 #%% Create the parametrization 
 
@@ -46,7 +46,7 @@ zparam = lambda t : scaling(t[:,2],t[:,6],t[:,5]+xparam(t)*angle_mult*t[:,4]+ypa
 sigma_ref = lambda x:  0.0*x[:,2]+(5.0+x[:,3]*5.0)*tn.logical_and(x[:,0]>=0.0,x[:,0]<0.5)*tn.logical_and(x[:,2]>0.3,x[:,2]<0.7)+1
 
 #%% Instantiate the Geometry object and do some plots
-geom = Geometry(Basis+Basis_param)
+geom = tt_iga.Geometry(Basis+Basis_param)
 geom.interpolate([xparam, yparam, zparam])
 
 # plots
@@ -91,7 +91,7 @@ print('Time stiffness matrix ',tme.total_seconds())
 f_tt = tntt.zeros(Stt.N)
 
 # incorporate the boundary conditions and construct the system tensor operator
-Pin_tt,Pbd_tt = get_projectors(N,[[1,1],[1,1],[0,0]])
+Pin_tt,Pbd_tt = tt_iga.projectors.get_projectors(N,[[1,1],[1,1],[0,0]])
 # Pbd_tt = (1/N[0]) * Pbd_tt
 U0 = 10
 
@@ -123,7 +123,7 @@ print('Time system solve in TT ',tme_amen)
 # print(dofs_tt)
 
 #%% plots
-fspace = Function(Basis+Basis_param)
+fspace = tt_iga.Function(Basis+Basis_param)
 fspace.dofs = dofs_tt
 
 fval = fspace([tn.linspace(0,1,128),tn.tensor([0.5]),tn.linspace(0,1,128),tn.tensor([0.05]),tn.tensor([0.05]),tn.tensor([0.05]),tn.tensor([0.05])])

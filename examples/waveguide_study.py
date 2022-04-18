@@ -2,8 +2,7 @@
 import torch as tn
 import torchtt as tntt
 import matplotlib.pyplot as plt
-from tt_iga import *
-import iga_fem
+import tt_iga 
 import numpy as np
 import datetime
 import matplotlib.colors
@@ -34,14 +33,14 @@ def iga_solve(deg, n, nl):
     results = {} # dictionary fopr the results
     
     Ns = np.array([n]*2+[n*2])-deg+1
-    baza1 = BSplineBasis(np.linspace(0,1,Ns[0]),deg)
-    baza2 = BSplineBasis(np.linspace(0,1,Ns[1]),deg)
-    baza3 = BSplineBasis(np.concatenate((np.linspace(0,0.25,Ns[2]//4),np.linspace(0.25,0.5,Ns[2]//4),np.linspace(0.5,0.75,Ns[2]//4),np.linspace(0.75,1,Ns[2]//4-1))),deg)
+    baza1 = tt_iga.bspline.BSplineBasis(np.linspace(0,1,Ns[0]),deg)
+    baza2 = tt_iga.bspline.BSplineBasis(np.linspace(0,1,Ns[1]),deg)
+    baza3 = tt_iga.bspline.BSplineBasis(np.concatenate((np.linspace(0,0.25,Ns[2]//4),np.linspace(0.25,0.5,Ns[2]//4),np.linspace(0.5,0.75,Ns[2]//4),np.linspace(0.75,1,Ns[2]//4-1))),deg)
 
     Basis = [baza1,baza2,baza3]
     N = [baza1.N,baza2.N,baza3.N]
 
-    Basis_param = [LagrangeLeg(nl,[-0.2,0.2])]*2+[LagrangeLeg(nl,[-0.3,0.3])]
+    Basis_param = [tt_iga.lagrange.LagrangeLeg(nl,[-0.2,0.2])]*2+[tt_iga.lagrange.LagrangeLeg(nl,[-0.3,0.3])]
 
 
     xc = lambda u,v: u*tn.sqrt(1-v**2/2)
@@ -91,7 +90,7 @@ def iga_solve(deg, n, nl):
     zparam = lambda t : plane_spanner(curve1(t[:,2],scale_mult*t[:,3],scale_mult*t[:,4],scale_mult*t[:,5],0),curve2(t[:,2],scale_mult*t[:,3],scale_mult*t[:,4],scale_mult*t[:,5],0),curve3(t[:,2],scale_mult*t[:,3],scale_mult*t[:,4],scale_mult*t[:,5],0),t[:,0],t[:,1])[2]
 
     # interpolate the geometry parametrization
-    geom = Geometry(Basis+Basis_param)
+    geom = tt_iga.Geometry(Basis+Basis_param)
     geom.interpolate([xparam, yparam, zparam])
 
 
@@ -109,7 +108,7 @@ def iga_solve(deg, n, nl):
     results['time stiff'] = tme
 
 
-    Pin_tt,Pbd_tt = get_projectors(N,[[0,0],[0,0],[0,0]])
+    Pin_tt,Pbd_tt = tt_iga.projectors.get_projectors(N,[[0,0],[0,0],[0,0]])
     # Pbd_tt = (1/N[0]) * Pbd_tt
     U0 = 10
 
@@ -118,7 +117,7 @@ def iga_solve(deg, n, nl):
 
     f_tt = tntt.zeros(Stt.N)
 
-    excitation_dofs = Function(Basis).interpolate(lambda t: tn.sin(t[:,0]*np.pi)*tn.sin(t[:,1]*np.pi))
+    excitation_dofs = tt_iga.Function(Basis).interpolate(lambda t: tn.sin(t[:,0]*np.pi)*tn.sin(t[:,1]*np.pi))
     tmp = tn.zeros(N)
     tmp[:,:,0] = excitation_dofs[:,:,0].full()
     g_tt = Pbd_tt@ (tntt.TT(tmp) ** tntt.ones([nl]*3))
@@ -170,19 +169,19 @@ def iga_solve(deg, n, nl):
     results['rank solution'] = dofs_tt.R
     results['rank system'] = M_tt.R
 
-    fspace = Function(Basis+Basis_param)
+    fspace = tt_iga.Function(Basis+Basis_param)
     fspace.dofs = dofs_tt
     
     # conventional solver for ONE parameter
     tme_stiff_classic = datetime.datetime.now()
-    stiff_sparse = iga_fem.construct_sparse_from_tt(Basis+Basis_param,Stt,[0,0,0])
-    mass_sparse = iga_fem.construct_sparse_from_tt(Basis+Basis_param,Mass_tt,[0,0,0])
+    stiff_sparse = tt_iga.full.construct_sparse_from_tt(Basis+Basis_param,Stt,[0,0,0])
+    mass_sparse = tt_iga.full.construct_sparse_from_tt(Basis+Basis_param,Mass_tt,[0,0,0])
     tme_stiff_classic = (datetime.datetime.now() - tme_stiff_classic).total_seconds() 
 
     print('Stiff time ',tme_stiff_classic)
     results['time stiff classic'] = tme_stiff_classic
 
-    Pin, Pbd = iga_fem.boundary_matrices(Basis, opened = [[0,0],[0,0],[0,0]])
+    Pin, Pbd = tt_iga.full.boundary_matrices(Basis, opened = [[0,0],[0,0],[0,0]])
 
     M = (Pin@(stiff_sparse-k*mass_sparse)+Pbd)
     rhs = Pbd @ g_tt[:,:,:,0,0,0].numpy().reshape([-1,1])

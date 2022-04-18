@@ -1,7 +1,7 @@
 import torch as tn
 import torchtt as tntt
 import matplotlib.pyplot as plt
-from tt_iga import *
+import tt_iga
 import numpy as np
 import datetime
 import matplotlib.colors
@@ -18,18 +18,18 @@ qtt = True
 
 # B-splines
 Ns = np.array([40,20,80])-deg+1
-baza1 = BSplineBasis(np.linspace(0,1,Ns[0]),deg)
-baza2 = BSplineBasis(np.linspace(0,1,Ns[1]),deg)
-baza3 = BSplineBasis(np.linspace(0,1,Ns[2]),deg)
+baza1 = tt_iga.bspline.BSplineBasis(np.linspace(0,1,Ns[0]),deg)
+baza2 = tt_iga.bspline.BSplineBasis(np.linspace(0,1,Ns[1]),deg)
+baza3 = tt_iga.bspline.BSplineBasis(np.linspace(0,1,Ns[2]),deg)
 Basis = [baza1,baza2,baza3]
 N = [baza1.N,baza2.N,baza3.N]
 
 # Parameter space basis
 var = 0.05
-Basis_param = [LagrangeLeg(nl,[-var,var])]*Np
+Basis_param = [tt_iga.lagrange.LagrangeLeg(nl,[-var,var])]*Np
 
 # B-spline basis for the radius perturbation
-bspl = BSplineBasis(np.linspace(0,1,Np-2+3),2)
+bspl = tt_iga.bspline.BSplineBasis(np.linspace(0,1,Np-2+3),2)
 def interface_func(t1,tp):
     return tn.einsum('ij,ji->j',tn.tensor(bspl(t1)[1:-1,:]),tn.tensor(tp))
 line = lambda t,a,b: t*(b-a)+a
@@ -44,7 +44,7 @@ yparam = lambda t : (2-h+line(t[:,1],0,interface_func(t[:,2],t[:,3:])*damp(t[:,2
 zparam = lambda t : w*t[:,0]
 
 # instantiate the GeometryMapping object. It is used for intepolating, evaluating and computing the discrete operators corresponding to a parameter dependent geometry
-geom = Geometry(Basis+Basis_param)
+geom = tt_iga.Geometry(Basis+Basis_param)
 # interpolate the geometry parametrization
 geom.interpolate([xparam, yparam, zparam])
  
@@ -67,7 +67,7 @@ tme = datetime.datetime.now() -tme
 print('Time stiffness matrix ',tme.total_seconds())
 
 # projection operators for enforcing the BCs
-Pin_tt, Pbd_tt = get_projectors(N,[[1,1],[0,0],[1,1]])
+Pin_tt, Pbd_tt = tt_iga.projectors.get_projectors(N,[[1,1],[0,0],[1,1]])
 Pin_tt = Pin_tt ** tntt.eye([nl]*Np)
 Pbd_tt = Pbd_tt ** tntt.eye([nl]*Np)
 
@@ -76,7 +76,7 @@ f_tt = tntt.zeros(Stt.N)
 
 # interpoalte the excitation and compute the correspinding tensor
 u0 = 1
-extitation_dofs = Function(Basis).interpolate(lambda t: t[:,0]*0+u0)
+extitation_dofs = tt_iga.Function(Basis).interpolate(lambda t: t[:,0]*0+u0)
 tmp = np.zeros(N)
 tmp[:,-1,:] = extitation_dofs[:,-1,:].full()
 g_tt =  Pbd_tt @ (tntt.TT(tmp) ** tntt.ones([nl]*Np))
@@ -110,7 +110,7 @@ print('Memory rhs [MB]',tntt.numel(rhs_tt)*8/1e6)
 print('Memory solution [MB]',tntt.numel(dofs_tt)*8/1e6)
 
 # check the error for the case Theta = 0 (cylinder capacitor)
-fspace = Function(Basis+Basis_param)
+fspace = tt_iga.Function(Basis+Basis_param)
 fspace.dofs = dofs_tt
 
 u_val = fspace([tn.linspace(0,1,8),tn.linspace(0,1,128),tn.linspace(0,1,128)]+[tn.tensor([0.0]) for i in range(Np)]).full()

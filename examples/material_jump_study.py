@@ -3,7 +3,6 @@ import torch as tn
 import torchtt as tntt
 import matplotlib.pyplot as plt
 import tt_iga
-import iga_fem
 import numpy as np
 import datetime
 import matplotlib.colors
@@ -104,7 +103,7 @@ def iga_solve(deg, n, nl):
     print('Solving in TT...')
     tme_amen = datetime.datetime.now() 
     # dofs_tt = tntt.solvers.amen_solve(M_tt.cuda(), rhs_tt.cuda(), x0 = tntt.ones(rhs_tt.N).cuda(), eps = eps_solver, nswp=40, kickrank=4).cpu()
-    dofs_tt = tntt.solvers.amen_solve(M_tt, rhs_tt, x0 = tntt.ones(rhs_tt.N), eps = eps_solver, preconditioner = 'c', local_iterations = 20, resets = 8, nswp=60, kickrank=4)
+    dofs_tt = tntt.solvers.amen_solve(M_tt, rhs_tt, x0 = tntt.ones(rhs_tt.N), eps = eps_solver, preconditioner = 'c', local_iterations = 20, resets = 8, nswp=80, kickrank=4)
     tme_amen = (datetime.datetime.now() -tme_amen).total_seconds() 
     print('Time system solve in TT ',tme_amen)
 
@@ -126,13 +125,13 @@ def iga_solve(deg, n, nl):
     
     tme_stiff_classic = datetime.datetime.now()
     # stiff_sparse = construct_stiff_sparse([baza1, baza2, baza3],[Xk, Yk, Zk], kappa_ref = lambda y1, y2, y3: 0.0*y2+(5.0+theta1*5.0)*np.logical_and(y1>=0.0,y1<0.5)*np.logical_and(y3>0.3,y3<0.7)+1)
-    stiff_sparse = iga_fem.construct_sparse_from_tt(Basis+Basis_param,Stt,[0,0,0,0])
+    stiff_sparse = tt_iga.full.construct_sparse_from_tt(Basis+Basis_param,Stt,[0,0,0,0])
     tme_stiff_classic = (datetime.datetime.now() - tme_stiff_classic).total_seconds() 
 
     print('Stiff time (conventional) ',tme_stiff_classic)
     results['time stiff classic'] = tme_stiff_classic
 
-    Pin, Pbd = iga_fem.boundary_matrices([baza1, baza2, baza3], opened = [[1,1],[1,1],[0,0]])
+    Pin, Pbd = tt_iga.full.boundary_matrices([baza1, baza2, baza3], opened = [[1,1],[1,1],[0,0]])
     
     M = Pin @ stiff_sparse + Pbd
     rhs = Pbd @ g_tt[:,:,:,0,0,0,0].full().reshape([-1,1])

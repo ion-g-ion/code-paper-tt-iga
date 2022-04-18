@@ -4,24 +4,22 @@ import matplotlib.pyplot as plt
 import tt_iga
 import numpy as np
 import datetime
-import matplotlib.colors
 import scipy.sparse
 import scipy.sparse.linalg
-import iga_fem
 import pandas as pd
 
 tn.set_default_dtype(tn.float64)
 
 def solve(Ns,deg,nl,alpha=1/4,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = True,conventional = True, gpu_solver = False):
    
-    baza1 = tt_iga.BSplineBasis(np.linspace(0,1,Ns[0]-deg+1),deg)
-    baza2 = tt_iga.BSplineBasis(np.linspace(0,1,Ns[1]-deg+1),deg)
-    baza3 = tt_iga.BSplineBasis(np.linspace(0,1,Ns[2]-deg+1),deg)
+    baza1 = tt_iga.bspline.BSplineBasis(np.linspace(0,1,Ns[0]-deg+1),deg)
+    baza2 = tt_iga.bspline.BSplineBasis(np.linspace(0,1,Ns[1]-deg+1),deg)
+    baza3 = tt_iga.bspline.BSplineBasis(np.linspace(0,1,Ns[2]-deg+1),deg)
     
     Basis = [baza1,baza2,baza3]
     N = [baza1.N,baza2.N,baza3.N]
     
-    Basis_param = [tt_iga.LagrangeLeg(nl,[0,1])]
+    Basis_param = [tt_iga.lagrange.LagrangeLeg(nl,[0,1])]
     
     xc = lambda u,v: u*np.sqrt(1-v**2/2)
     yc = lambda u,v: v*np.sqrt(1-u**2/2)
@@ -69,7 +67,7 @@ def solve(Ns,deg,nl,alpha=1/4,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = 
     f_fun.dofs = tntt.zeros(uref_fun.dofs.N)
     
 
-    Pin_tt, Pbd_tt = tt_iga.get_projectors(N,[[0,0],[0,0],[0,0]]) 
+    Pin_tt, Pbd_tt = tt_iga.projectors.get_projectors(N,[[0,0],[0,0],[0,0]]) 
    
     
     Pin_tt = Pin_tt ** tntt.eye(Stiff_tt.N[3:])
@@ -132,11 +130,11 @@ def solve(Ns,deg,nl,alpha=1/4,eps_solver = 10*1e-9,eps_construction=1e-11,qtt = 
     if np.prod(N)<=64**3 and conventional:
         tme_stiff_classic = datetime.datetime.now()
         # stiff_sparse = iga_fem.construct_stiff_sparse([baza1, baza2, baza3],[geom.Xs[0][:,:,:,nl//2].numpy(), geom.Xs[1][:,:,:,nl//2].full(), geom.Xs[2][:,:,:,nl//2].full()])
-        stiff_sparse = iga_fem.construct_sparse_from_tt(Basis+Basis_param, Stiff_tt, [nl-1])
+        stiff_sparse = tt_iga.full.construct_sparse_from_tt(Basis+Basis_param, Stiff_tt, [nl-1])
         tme_stiff_classic = (datetime.datetime.now() - tme_stiff_classic).total_seconds() 
         print('Stiff time ',tme_stiff_classic)
 
-        Pin, Pbd = iga_fem.boundary_matrices([baza1, baza2, baza3])
+        Pin, Pbd = tt_iga.full.boundary_matrices([baza1, baza2, baza3])
         
         M = Pin @ stiff_sparse + Pbd
         rhs = Pin @ f_fun.dofs[:,:,:,nl-1].numpy().reshape([-1,1]) + Pbd @ uref_fun.dofs[:,:,:,nl-1].numpy().reshape([-1,1])
@@ -188,7 +186,9 @@ df = pd.DataFrame([[el for el in v.values() ] for v in results1], columns = [k f
 # dict_keys(['err_L2', 'err_inf', 'rank_tt', 'rank_mat', 'time_stiff', 'time_solve', 'time_solve_qtt', 'storage_tt', 'storage_qtt', 'time_gmres', 'time_classic', 'n', 'deg'])
 
 # Plots 
-import tikzplotlib
+save_tikz = False
+if save_tikz:
+    import tikzplotlib
 plt.figure()
 plt.loglog(ns,df[df['deg']==1]['err_L2'].to_numpy(),'r')
 plt.loglog(ns,df[df['deg']==2]['err_L2'].to_numpy(),'g')
@@ -200,7 +200,7 @@ plt.legend([r'linear',r'quadratic',r'cubic',r'$\mathcal{O}(n^{-2})$ line',r'$\ma
 plt.gca().set_xlabel(r'B-spline basis size $n$')
 plt.gca().set_ylabel(r'relative errors')
 plt.grid(True, which="both", ls="-")
-tikzplotlib.save('data/conv_err.tex')
+if save_tikz: tikzplotlib.save('data/conv_err.tex')
 
 plt.figure()
 plt.loglog(ns,df[df['deg']==2]['storage_tt'].to_numpy(),'r')
@@ -209,7 +209,7 @@ plt.legend([r'TT',r'QTT '])
 plt.gca().set_xlabel(r'B-spline basis size $n$')
 plt.gca().set_ylabel(r'storage [MB]')
 plt.grid(True, which="both", ls="-")
-tikzplotlib.save('data/conv_storage.tex')
+if save_tikz: tikzplotlib.save('data/conv_storage.tex')
 
 plt.figure()
 plt.loglog(ns,df[df['deg']==2]['time_solve'].to_numpy(),'r')
@@ -220,7 +220,7 @@ plt.ylabel('time [s]')
 plt.xlabel(r'B-spline basis size $n$')
 plt.legend(['TT (entire parameter grid)','QTT (entire parameter grid)','GMRES (single geometry)',r'$\mathcal{O}(n^{2})$ line'])
 plt.grid(True, which="both", ls="-")
-tikzplotlib.save('data/conv_time.tex')
+if save_tikz: tikzplotlib.save('data/conv_time.tex')
 
 plt.figure()
 plt.loglog(ns,df[df['deg']==2]['time_stiff'].to_numpy(),'r')
@@ -229,7 +229,7 @@ plt.ylabel('time [s]')
 plt.xlabel(r'B-spline basis size $n$')
 plt.legend(['TT (entire parameter grid)','conventional (single geometry)'])
 plt.grid(True, which="both", ls="-")
-tikzplotlib.save('data/stiff_time.tex')
+if save_tikz: tikzplotlib.save('data/stiff_time.tex')
 
 
 
@@ -258,54 +258,11 @@ plt.legend([r'$\ell='+str(tmp)+r'$' for tmp in nls])
 plt.gca().set_xlabel(r'B-spline basis size $n$')
 plt.gca().set_ylabel(r'relative error')
 plt.grid(True, which="both", ls="-")
-tikzplotlib.save('data/conv_N_ell.tex')
+if save_tikz: tikzplotlib.save('data/conv_N_ell.tex')
 
 plt.figure()
 plt.semilogy(np.array(nls),df2[df2['n']==ns[-1]]['err_L2'].to_numpy())
 plt.gca().set_xlabel(r'\#collocation points $\ell$')
 plt.gca().set_ylabel(r'relative error')
 plt.grid(True, which="both", ls="-")
-tikzplotlib.save('data/conv_ell.tex')
-
-# plt.figure()
-# plt.loglog(np.array(nls),time_stiff)
-# plt.legend([r'$N='+str(tmp)+'$' for tmp in ns])
-# plt.gca().set_xlabel(r'$\ell$')
-# plt.gca().set_ylabel(r'time [s]')
-# plt.grid(True, which="both", ls="-")
-
-# plt.figure()
-# plt.loglog(np.array(nls),time_solve)
-# plt.legend([r'$N='+str(tmp)+'$' for tmp in ns])
-# plt.gca().set_xlabel(r'$\ell$')
-# plt.gca().set_ylabel(r'time [s]')
-# plt.grid(True, which="both", ls="-")
-
-#%% interpolation level
-# epss = [12-4,1e-5,1e-6,1e-7,1e-8]
-# ns = [16,32,64,128]
-# nl = 8
-# 
-# 
-# results3 = []
-# for eps in epss:
-#     for n in ns:
-#         print()
-#         print('#####################')
-#         print('eps ',eps, ' N ',n)
-#         dct = solve(np.array([n]*3),2,nl,eps_solver=eps,conventional = False,qtt=False)
-#         dct['n'] = n
-#         dct['eps'] = eps
-#         results3.append(dct)
-# 
-# 
-# df3 = pd.DataFrame([[el for el in v.values() ] for v in results3], columns = [k for k in results3[0]])
-# 
-# plt.figure()
-# for eps in epss: plt.loglog(np.array(ns),df3[df3['eps']==eps]['err_L2'].to_numpy())
-# plt.gca().set_xlabel(r'$n$')
-# plt.gca().set_ylabel(r'relative error')
-# plt.legend([r'$\epsilon=10^{'+str(int(np.log10(tmp)))+r'}$' for tmp in epss])
-# plt.grid()
-# tikzplotlib.save('data/conv_eps.tex')
-# 
+if save_tikz: tikzplotlib.save('data/conv_ell.tex')

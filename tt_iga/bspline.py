@@ -1,13 +1,40 @@
+"""
+This module implements the univariate B-Spline basis class.
 
+"""
 import matplotlib.pyplot as plt
 from scipy.interpolate import BSpline
 import scipy.interpolate
 import numpy as np
 
 class BSplineBasis:
-    
-    def __init__(self,knots,deg,ends = (True,True)):
+     
+    def __init__(self,knots,deg):
+        """
         
+
+        Example:
+
+        ```
+        import numpy as np
+        import tt_iga
+        import matplotlib.pyplot as plt
+
+        x = np.linspace(0,1,1000)
+
+        basis1 = tt_iga.bspline.BSplineBasis(np.array([0,1/4,1/2,3/4,1]),1) # piecewise linear
+        plt.figure()
+        plt.plot(x,basis1(x).T)
+
+        basis2 = tt_iga.bspline.BSplineBasis(np.array([0,1/4,1/2,1/2,3/4,1]),2) # increased multiplicity
+        plt.figure()
+        plt.plot(x,basis2(x).T)
+        ```
+
+        Args:
+            knots (numpy.array): _description_
+            deg (int): The degree of the B-Spline basis.
+        """
         self.N=knots.size+deg-1
         self.deg=deg
         self.knots=np.hstack( ( np.ones(deg)*knots[0] , knots , np.ones(deg)*knots[-1] ) )

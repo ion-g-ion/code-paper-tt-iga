@@ -7,7 +7,6 @@ import datetime
 import matplotlib.colors
 import scipy.sparse
 import scipy.sparse.linalg
-import iga_fem
 import pandas as pd
 
 #%% cylinder woth material in physical domain
