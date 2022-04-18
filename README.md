@@ -27,6 +27,7 @@ You can install the package using the following `pip` command:
 pip install git+https://github.com/ion-g-ion/code-paper-tt-iga
 ```
 
+## Packages
 
 ## Scripts and examples:
 
@@ -39,5 +40,12 @@ pip install git+https://github.com/ion-g-ion/code-paper-tt-iga
 * [twisted.py](./examples/twisted.py) / [twisted.ipynb](./examples/twisted.ipynb):
 
 
+ The documentation is generated using `pdoc3` with:
 
+ ```
+ pdoc3 --html tt_iga -o docs/ --config latex_math=True --force
+ ```
 
+## Author
+
+Ion Gabriel Ion, ion.ion.gabriel@gmail.com
