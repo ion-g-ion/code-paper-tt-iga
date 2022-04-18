@@ -8,7 +8,9 @@ import torchtt as tntt
 import matplotlib.pyplot as plt
 import matplotlib.colors
 from matplotlib import cm
-from tt_iga import Function, Geometry, BSplineBasis, LagrangeLeg
+from tt_iga import Function, Geometry
+from tt_iga.bspline import BSplineBasis
+from tt_iga.lagrange import LagrangeLeg
 
 tn.set_default_dtype(tn.float64)
 #%% Univariate bases and space definition
